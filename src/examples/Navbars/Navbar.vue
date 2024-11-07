@@ -2,7 +2,6 @@
 import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import { useRoute } from "vue-router";
-import Breadcrumbs from "../Breadcrumbs.vue";
 
 const showMenu = ref(false);
 const store = useStore();
