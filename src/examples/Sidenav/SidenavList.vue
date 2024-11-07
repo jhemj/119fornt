@@ -41,8 +41,8 @@ const getRoute = () => {
 
       <li class="nav-item">
         <sidenav-item
-          to="/billing"
-          :class="getRoute() === 'billing' ? 'active' : ''"
+          to="/reports"
+          :class="getRoute() === 'reports' ? 'active' : ''"
           navText="전체보기"
         >
           <template v-slot:icon>

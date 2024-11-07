@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Tables from "../views/Tables.vue";
-import Billing from "../views/Billing.vue";
+import Reports from "../views/Reports.vue";
 import VirtualReality from "../views/VirtualReality.vue";
 import RTL from "../views/Rtl.vue";
 import Profile from "../views/Profile.vue";
@@ -25,9 +25,9 @@ const routes = [
     component: Tables,
   },
   {
-    path: "/billing",
+    path: "/reports",
     name: "전체보기",
-    component: Billing,
+    component: Reports,
   },
   {
     path: "/virtual-reality",
