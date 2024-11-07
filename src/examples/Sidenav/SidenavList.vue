@@ -53,8 +53,8 @@ const getRoute = () => {
 
       <li class="nav-item">
         <sidenav-item
-          to="/virtual-reality"
-          :class="getRoute() === 'virtual-reality' ? 'active' : ''"
+          to="/campaign"
+          :class="getRoute() === 'campaign' ? 'active' : ''"
           navText="캠페인 현황"
         >
           <template v-slot:icon>

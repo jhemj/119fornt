@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Tables from "../views/Tables.vue";
 import Reports from "../views/Reports.vue";
-import VirtualReality from "../views/VirtualReality.vue";
+import Campaign from "../views/Campaign.vue";
 import RTL from "../views/Rtl.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
@@ -30,9 +30,9 @@ const routes = [
     component: Reports,
   },
   {
-    path: "/virtual-reality",
+    path: "/campaign",
     name: "캠페인 현황",
-    component: VirtualReality,
+    component: Campaign,
   },
   {
     path: "/rtl-page",
