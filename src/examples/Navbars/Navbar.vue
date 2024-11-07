@@ -21,7 +21,6 @@ const closeMenu = () => {
   }, 100);
 };
 </script>
-
 <template>
   <nav
     class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl"
@@ -29,49 +28,41 @@ const closeMenu = () => {
     id="navbarBlur"
     data-scroll="true"
   >
-    <div class="px-3 py-1 container-fluid">
-      <!-- 제목을 흰색으로 설정하고 아래로 약간 내림 -->
+    <div class="container-fluid">
       <h2 class="page-title">{{ currentRouteName }}</h2>
-
-      <div
-        class="mt-2 collapse navbar-collapse mt-sm-0 me-md-0 me-sm-4 d-flex justify-content-end"
-        id="navbar"
-      >
-        <ul class="navbar-nav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarResponsive">
+        <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
             <router-link
               :to="{ name: 'Signin' }"
-              class="px-0 nav-link font-weight-bold text-white"
+              class="nav-link font-weight-bold text-white"
               target="_blank"
             >
               <i class="fa fa-user me-sm-2"></i>
               <span class="d-sm-inline d-none">Sign In</span>
             </router-link>
           </li>
-          <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
-            <a
-              href="#"
-              @click="minimizeSidebar"
-              class="p-0 nav-link text-white"
-              id="iconNavbarSidenav"
-            >
+          <li class="nav-item d-xl-none d-flex align-items-center">
+            <a href="#" @click="minimizeSidebar" class="nav-link text-white" id="iconNavbarSidenav">
               <div class="sidenav-toggler-inner">
-                <i class="sidenav-toggler-line bg-white"></i>
-                <i class="sidenav-toggler-line bg-white"></i>
-                <i class="sidenav-toggler-line bg-white"></i>
+                <i class="sidenav-toggler-line"></i>
+                <i class="sidenav-toggler-line"></i>
+                <i class="sidenav-toggler-line"></i>
               </div>
             </a>
           </li>
-          <li class="px-3 nav-item d-flex align-items-center">
-            <a class="p-0 nav-link text-white" @click="toggleConfigurator">
-              <i class="cursor-pointer fa fa-cog fixed-plugin-button-nav"></i>
+          <li class="nav-item d-flex align-items-center">
+            <a class="nav-link text-white" @click="toggleConfigurator">
+              <i class="fa fa-cog fixed-plugin-button-nav"></i>
             </a>
           </li>
-          <li class="nav-item dropdown d-flex align-items-center pe-2">
+          <li class="nav-item dropdown d-flex align-items-center">
             <a
               href="#"
-              class="p-0 nav-link text-white"
-              :class="[showMenu ? 'show' : '']"
+              class="nav-link text-white"
               id="dropdownMenuButton"
               data-bs-toggle="dropdown"
               aria-expanded="false"

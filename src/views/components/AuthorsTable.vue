@@ -76,28 +76,6 @@
                   </div>
                 </td>
               </tr>
-              <tr>
-                <td colspan="11" class="p-0">
-                  <div class="detail-box">
-                    <h6>보안위협 상세정보</h6>
-                    <div class="row">
-                      <div class="col-md-3 col-sm-6 mb-2 long-text">
-                        <strong>발신자:</strong> {{ report.details.sender }}
-                      </div>
-                      <div class="col-md-3 col-sm-6 mb-2 long-text">
-                        <strong>제목:</strong> {{ report.details.subject }}
-                      </div>
-                      <div class="col-md-3 col-sm-6 mb-2 long-text">
-                        <strong>첨부파일:</strong> {{ report.details.attachment }}
-                      </div>
-                      <div class="col-md-3 col-sm-6 mb-2 long-text">
-                        <strong>URL:</strong> 
-                        <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
             </template>
           </tbody>
         </table>
@@ -283,7 +261,6 @@ const reports = ref([
   },
 ]);
 
-// 수정 버튼 클릭 시 실행되는 함수
 const handleEdit = (id, selectedOption) => {
   const report = reports.value.find(r => r.id === id);
   if (report) {
@@ -293,9 +270,7 @@ const handleEdit = (id, selectedOption) => {
 </script>
 
 <style scoped>
-/* 테이블 셀 내용이 길어질 경우 줄 바꿈 적용 */
-.table th,
-.table td {
+.table th, .table td {
   padding: 10px;
   font-size: 14px;
   vertical-align: middle;
@@ -311,36 +286,30 @@ const handleEdit = (id, selectedOption) => {
   text-overflow: ellipsis;
 }
 
-/* 열 숨김을 위한 클래스 추가 */
 @media (max-width: 1200px) {
-  /* 호칭 열 숨김 */
   .title-column {
     display: none;
   }
 }
 
 @media (max-width: 992px) {
-  /* 부문 열 숨김 */
   .sector-column {
     display: none;
   }
 }
 
 @media (max-width: 768px) {
-  /* 회사 열 숨김 */
   .company-column {
     display: none;
   }
 }
 
 @media (max-width: 576px) {
-  /* 이름 열 숨김 */
   .name-column {
     display: none;
   }
 }
 
-/* "AI Assistant" 제목 텍스트 그라데이션 */
 .ai-assistant-header strong {
   background: linear-gradient(135deg, #6a11cb, #2575fc, #ff6a00);
   background-clip: text;
@@ -348,7 +317,6 @@ const handleEdit = (id, selectedOption) => {
   -webkit-text-fill-color: transparent;
 }
 
-/* 기본 그라데이션 텍스트 스타일 */
 .gradient-text {
   background: linear-gradient(135deg, #6a11cb, #2575fc, #ff6a00);
   background-clip: text;
@@ -357,7 +325,6 @@ const handleEdit = (id, selectedOption) => {
   font-weight: bold;
 }
 
-/* 붉은색이 메인인 그라데이션 텍스트 스타일 */
 .red-gradient-text {
   background: linear-gradient(135deg, #ff0000, #ff6a00);
   background-clip: text;
@@ -366,51 +333,16 @@ const handleEdit = (id, selectedOption) => {
   font-weight: bold;
 }
 
-/* 상세 정보 박스 스타일 */
-.detail-box {
-  background-color: #f8f9fa;
-  padding: 8px 16px;
-  border-left: 4px solid #b7b7b7;
-  margin: 4px 3% 4px 3%;
-  border-radius: 0px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  font-size: 12px;
-  text-align: left;
+.btn-sm {
+  padding: .5rem .5rem;
+  font-size: .875rem;
+  white-space: nowrap;
 }
 
-.detail-box h6 {
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 13px;
-}
-
-.detail-box a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.detail-box a:hover {
-  text-decoration: underline;
-}
-
-/* 버튼 간격 조정 */
-.btn {
-  margin: 0 2px;
-}
-
-/* 상세 정보 내용의 컬럼 간격 조정 */
-.detail-box .row > div {
-  display: flex;
-  align-items: center;
-  padding-left: 16px;
-}
-
-/* 반응형 디자인 조정 */
-@media (max-width: 768px) {
-  .detail-box .col-md-3 {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding-left: 8px;
+@media (max-width: 576px) {
+  .btn-sm {
+    padding: .1rem .4rem;
+    font-size: .775rem;
   }
 }
 </style>
