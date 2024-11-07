@@ -16,27 +16,27 @@ const routes = [
   },
   {
     path: "/dashboard-default",
-    name: "Dashboard",
+    name: "대시보드",
     component: Dashboard,
   },
   {
     path: "/tables",
-    name: "Tables",
+    name: "미분류",
     component: Tables,
   },
   {
     path: "/billing",
-    name: "Billing",
+    name: "전체보기",
     component: Billing,
   },
   {
     path: "/virtual-reality",
-    name: "Virtual Reality",
+    name: "캠페인 현황",
     component: VirtualReality,
   },
   {
     path: "/rtl-page",
-    name: "RTL",
+    name: "보안 위협",
     component: RTL,
   },
   {

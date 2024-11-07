@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { useStore } from "vuex";
 const store = useStore();
 
-const isRTL = computed(() => store.state.isRTL);
+// const isRTL = computed(() => store.state.isRTL);
 const layout = computed(() => store.state.layout);
 defineProps({
   card: {
@@ -26,7 +26,7 @@ defineProps({
     class="card card-plain shadow-none"
     id="sidenavCard"
   >
-    <div class="p-3 card-body text-center w-100 pt-0">
+    <!-- <div class="p-3 card-body text-center w-100 pt-0">
       <img
         class="w-50 mx-auto"
         src="@/assets/img/illustrations/icon-documentation.svg"
@@ -42,18 +42,18 @@ defineProps({
       </p>
 
       <p v-else class="text-xs font-weight-bold">Please check our docs</p>
-    </div>
+    </div> -->
 
-    <a
+    <!-- <a
       v-if="isRTL"
       href="https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/"
       target="_blank"
       class="mb-3 btn btn-dark btn-sm w-100"
     >
       توثيق
-    </a>
+    </a> -->
 
-    <a
+    <!-- <a
       v-else
       href="https://www.creative-tim.com/learning-lab/vue/overview/argon-dashboard/"
       target="_blank"
@@ -69,15 +69,15 @@ defineProps({
       class="mb-3 btn btn-success btn-sm w-100"
     >
       التطور للاحترافية
-    </a>
+    </a> -->
 
-    <a
+    <!-- <a
       v-else
       href="https://www.creative-tim.com/product/vue-argon-dashboard-pro"
       target="_blank"
       class="mb-3 btn btn-success btn-sm w-100"
     >
       Upgrade to pro
-    </a>
+    </a> -->
   </div>
 </template>
