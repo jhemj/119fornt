@@ -65,8 +65,8 @@ const getRoute = () => {
 
       <li class="nav-item">
         <sidenav-item
-          to="/rtl-page"
-          :class="getRoute() === 'rtl-page' ? 'active' : ''"
+          to="/threats"
+          :class="getRoute() === 'threats' ? 'active' : ''"
           navText="보안 위협"
         >
           <template v-slot:icon>

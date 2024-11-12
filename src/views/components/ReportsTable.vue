@@ -1,7 +1,7 @@
 <template>
   <div class="card">
     <div class="card-header pb-0">
-      <h6>미분류 신고 리스트</h6>
+      <h6>전체 신고 리스트</h6>
     </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
@@ -200,6 +200,11 @@ function handleEdit(reportId, selectedOption) {
 
 .font-weight-bold {
   font-weight: bold;
+}
+
+.table-responsive {
+  overflow-x: hidden; /* 가로 스크롤 제거 */
+  overflow-y: hidden; /* 세로 스크롤 제거 */
 }
 
 /* 반응형 디자인 */

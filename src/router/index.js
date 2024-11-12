@@ -3,7 +3,7 @@ import Dashboard from "../views/Dashboard.vue";
 import Tables from "../views/Tables.vue";
 import Reports from "../views/Reports.vue";
 import Campaign from "../views/Campaign.vue";
-import RTL from "../views/Rtl.vue";
+import Threats from "../views/Threats.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
@@ -35,9 +35,9 @@ const routes = [
     component: Campaign,
   },
   {
-    path: "/rtl-page",
+    path: "/threats",
     name: "보안 위협",
-    component: RTL,
+    component: Threats,
   },
   {
     path: "/profile",
