@@ -5,8 +5,7 @@ import Reports from "../views/Reports.vue";
 import Campaign from "../views/Campaign.vue";
 import Threats from "../views/Threats.vue";
 import Profile from "../views/Profile.vue";
-import Signup from "../views/Signup.vue";
-import Signin from "../views/Signin.vue";
+
 
 const routes = [
   {
@@ -43,16 +42,6 @@ const routes = [
     path: "/profile",
     name: "Profile",
     component: Profile,
-  },
-  {
-    path: "/signin",
-    name: "Signin",
-    component: Signin,
-  },
-  {
-    path: "/signup",
-    name: "Signup",
-    component: Signup,
   },
 ];
 

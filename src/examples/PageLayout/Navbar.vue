@@ -15,6 +15,7 @@ defineProps({
   isBtn: { type: String, default: "bg-gradient-light" },
 });
 </script>
+
 <template>
   <!-- Navbar -->
   <nav
@@ -67,26 +68,6 @@ defineProps({
                 :class="isBlur ? 'text-dark' : 'text-white'"
               ></i>
               Profile
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link class="nav-link me-2" to="/signup">
-              <i
-                class="fas fa-user-circle opacity-6 me-1"
-                aria-hidden="true"
-                :class="isBlur ? 'text-dark' : 'text-white'"
-              ></i>
-              Sign Up
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link class="nav-link me-2" to="/signin">
-              <i
-                class="fas fa-key opacity-6 me-1"
-                aria-hidden="true"
-                :class="isBlur ? 'text-dark' : 'text-white'"
-              ></i>
-              Sign In
             </router-link>
           </li>
         </ul>
