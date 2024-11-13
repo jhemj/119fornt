@@ -8,39 +8,19 @@
         <table class="table align-items-center mb-0">
           <thead>
             <tr>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>번호</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>접수일</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 company-column">
-                <strong>회사</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 sector-column">
-                <strong>부문</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 title-column">
-                <strong>호칭</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 name-column">
-                <strong>이름</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>이메일</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>제목</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ai-assistant-header">
-                <strong>AI Assistant</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>승인</strong>
-              </th>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                <strong>수정</strong>
-              </th>
+              <th class="text-xs">번호</th>
+              <th class="text-xs">접수일</th>
+              <th class="text-xs company-column">회사</th>
+              <th class="text-xs sector-column">부문</th>
+              <th class="text-xs title-column">호칭</th>
+              <th class="text-xs name-column">이름</th>
+              <th class="text-xs">이메일</th>
+              <th class="text-xs">제목</th>
+              <th class="text-xs attachment-column">첨부파일</th>
+              <th class="text-xs url-column">URL</th>
+              <th class="text-xs ai-assistant-header">AI Assistant</th>
+              <th class="text-xs">승인</th>
+              <th class="text-xs">수정</th>
             </tr>
           </thead>
           <tbody>
@@ -54,6 +34,10 @@
                 <td class="align-middle text-sm name-column">{{ report.name }}</td>
                 <td class="align-middle text-sm long-text">{{ report.email }}</td>
                 <td class="align-middle text-sm long-text">{{ report.subject }}</td>
+                <td class="align-middle text-sm attachment-column">{{ report.details.attachment }}</td>
+                <td class="align-middle text-sm url-column">
+                  <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a>
+                </td>
                 <td class="align-middle text-sm ai-assistant-cell">
                   <span :class="['gradient-text', {'red-gradient-text': report.aiAnalysis === '피싱' || report.aiAnalysis === '악성코드'}]">
                     {{ report.aiAnalysis }}
@@ -76,6 +60,15 @@
                   </div>
                 </td>
               </tr>
+              <!-- 모바일에서만 보이는 첨부파일 및 URL 박스 -->
+              <tr v-show="isMobile" class="mobile-info-row">
+                <td colspan="13">
+                  <div class="mobile-info-box">
+                    <div><strong>첨부파일:</strong> {{ report.details.attachment }}</div>
+                    <div><strong>URL:</strong> <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a></div>
+                  </div>
+                </td>
+              </tr>
             </template>
           </tbody>
         </table>
@@ -86,6 +79,12 @@
 
 <script setup>
 import { ref } from 'vue';
+
+// 모바일 여부 판단
+const isMobile = ref(window.innerWidth <= 576);
+window.addEventListener('resize', () => {
+  isMobile.value = window.innerWidth <= 576;
+});
 
 // 예시 데이터
 const reports = ref([
@@ -262,13 +261,12 @@ const reports = ref([
 ]);
 
 const handleEdit = (id, selectedOption) => {
-  const report = reports.value.find(r => r.id === id);
+  const report = reports.value.find((r) => r.id === id);
   if (report) {
     report.aiAnalysis = selectedOption;
   }
 };
 </script>
-
 <style scoped>
 .table th, .table td {
   padding: 10px;
@@ -277,7 +275,7 @@ const handleEdit = (id, selectedOption) => {
   word-wrap: break-word;
   word-break: break-all;
   white-space: normal;
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
 }
 
 .long-text {
@@ -285,7 +283,7 @@ const handleEdit = (id, selectedOption) => {
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
 }
 
 @media (max-width: 1200px) {
@@ -310,6 +308,31 @@ const handleEdit = (id, selectedOption) => {
   .name-column {
     display: none;
   }
+  
+  /* 첨부파일과 URL 열 숨기기 */
+  .attachment-column,
+  .url-column {
+    display: none;
+  }
+
+  .btn-sm {
+    padding: .1rem .4rem;
+    font-size: .775rem;
+  }
+}
+
+/* 모바일 정보 박스 스타일 */
+.mobile-info-box {
+  padding: 6px;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  background-color: #f1f3f5;
+  border: 1px solid #ddd;
+  margin: 5px auto;
+}
+
+.mobile-info-box div {
+  margin-bottom: 5px;
 }
 
 .ai-assistant-header strong {
@@ -317,7 +340,7 @@ const handleEdit = (id, selectedOption) => {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
 }
 
 .gradient-text {
@@ -326,7 +349,7 @@ const handleEdit = (id, selectedOption) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: bold;
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
 }
 
 .red-gradient-text {
@@ -335,19 +358,12 @@ const handleEdit = (id, selectedOption) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: bold;
-  text-align: center; /* 중앙 정렬 */
+  text-align: center;
 }
 
 .btn-sm {
   padding: .5rem .5rem;
   font-size: .875rem;
   white-space: nowrap;
-}
-
-@media (max-width: 576px) {
-  .btn-sm {
-    padding: .1rem .4rem;
-    font-size: .775rem;
-  }
 }
 </style>

@@ -167,6 +167,8 @@ function handleEdit(reportId, selectedOption) {
 </script>
 
 <style scoped>
+/* 일반 스타일 */
+
 .detail-box {
   background-color: #f8f9fa;
   padding: 10px;
@@ -179,7 +181,8 @@ function handleEdit(reportId, selectedOption) {
   margin: 0;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   font-size: 0.75rem;
   white-space: normal;
   word-wrap: break-word;
@@ -216,6 +219,7 @@ function handleEdit(reportId, selectedOption) {
 .text-danger {
   color: #dc3545 !important;
 }
+
 .font-weight-bold {
   font-weight: bold;
 }
@@ -227,30 +231,36 @@ function handleEdit(reportId, selectedOption) {
 }
 
 /* 반응형 디자인 */
+
+/* 화면 크기가 1200px 이하일 때 */
 @media (max-width: 1200px) {
   .title-column {
     display: none;
   }
 }
 
+/* 화면 크기가 992px 이하일 때 */
 @media (max-width: 992px) {
   .sector-column {
     display: none;
   }
 }
 
+/* 화면 크기가 768px 이하일 때 */
 @media (max-width: 768px) {
   .company-column {
     display: none;
   }
 }
 
+/* 화면 크기가 576px 이하일 때 */
 @media (max-width: 576px) {
   .name-column {
     display: none;
   }
 
-  .table th, .table td {
+  .table th,
+  .table td {
     font-size: 0.65rem;
   }
 
@@ -264,7 +274,8 @@ function handleEdit(reportId, selectedOption) {
   }
 
   /* 상세 버튼 열 항상 보이도록 설정 */
-  .detail-button-column {
+  /* 선택자 구체성을 높여 우선순위 확보 */
+  .table-responsive .table .detail-button-column {
     display: table-cell !important;
   }
 }
