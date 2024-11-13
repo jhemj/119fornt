@@ -183,6 +183,7 @@ function blockUrl(reportId) {
 /* 박스 모델 설정 */
 .table, .table th, .table td {
   box-sizing: border-box;
+  text-align: center; /* 중앙 정렬 */
 }
 
 /* 페이드 트랜지션 */
@@ -227,11 +228,7 @@ function blockUrl(reportId) {
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: anywhere;
-}
-
-/* 텍스트 센터 정렬 */
-.text-center {
-  text-align: center;
+  text-align: center; /* 모든 테이블 셀 중앙 정렬 */
 }
 
 /* 대응 버튼 스타일 간소화 */

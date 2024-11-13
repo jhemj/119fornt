@@ -277,6 +277,7 @@ const handleEdit = (id, selectedOption) => {
   word-wrap: break-word;
   word-break: break-all;
   white-space: normal;
+  text-align: center; /* 중앙 정렬 */
 }
 
 .long-text {
@@ -284,6 +285,7 @@ const handleEdit = (id, selectedOption) => {
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: center; /* 중앙 정렬 */
 }
 
 @media (max-width: 1200px) {
@@ -315,6 +317,7 @@ const handleEdit = (id, selectedOption) => {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-align: center; /* 중앙 정렬 */
 }
 
 .gradient-text {
@@ -323,6 +326,7 @@ const handleEdit = (id, selectedOption) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: bold;
+  text-align: center; /* 중앙 정렬 */
 }
 
 .red-gradient-text {
@@ -331,6 +335,7 @@ const handleEdit = (id, selectedOption) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: bold;
+  text-align: center; /* 중앙 정렬 */
 }
 
 .btn-sm {

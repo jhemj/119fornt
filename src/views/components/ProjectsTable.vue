@@ -86,6 +86,7 @@ const reportData = ref([
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: bold;
+  text-align: center; /* 중앙 정렬 */
 }
 
 /* 테이블 셀 크기 조정 */
@@ -94,19 +95,20 @@ const reportData = ref([
   padding: 12px; /* 약간의 패딩 증가 */
   font-size: 14px;
   vertical-align: middle;
+  text-align: center; /* 중앙 정렬 */
 }
 
 /* Adjusted column widths */
 .classification-header, .classification-cell {
-  width: 15%; /* Narrower width for classification */
+  width: 15%;
 }
 
 .count-header, .count-cell {
-  width: 15%; /* Narrower width for count */
+  width: 15%;
 }
 
 .percentage-header, .percentage-cell {
-  width: 70%; /* Wider width for percentage */
+  width: 70%;
 }
 
 /* 테이블 헤더 볼드 처리 */
@@ -118,6 +120,7 @@ const reportData = ref([
 .classification {
   font-weight: bold;
   color: #333;
+  text-align: center; /* 중앙 정렬 */
 }
 
 /* 진행률 바 스타일링 */
@@ -125,6 +128,7 @@ const reportData = ref([
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
+  width: 100%; /* 전체 너비 */
 }
 
 .progress-bar {
@@ -141,6 +145,7 @@ const reportData = ref([
 .additional-message p {
   margin: 0;
   font-size: 16px;
+  text-align: center; /* 중앙 정렬 */
 }
 
 /* 카드 너비 확장 */
