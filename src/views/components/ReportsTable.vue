@@ -18,7 +18,7 @@
               <th class="text-xs">제목</th>
               <th class="text-xs">상태</th>
               <th class="text-xs">수정</th>
-              <th class="text-xs">상세</th>
+              <th class="text-xs detail-button-column">상세</th> <!-- 상세 버튼 열 -->
             </tr>
           </thead>
           <tbody>
@@ -56,7 +56,7 @@
                   </div>
                 </td>
                 <!-- 상세 버튼 -->
-                <td>
+                <td class="detail-button-column">
                   <button @click="toggleDetails(report.id)" class="btn-icon">
                     <span class="gradient-icon">{{ report.showDetails ? '▴' : '▾' }}</span>
                   </button>
@@ -183,7 +183,7 @@ function handleEdit(reportId, selectedOption) {
   font-size: 0.75rem;
   white-space: normal;
   word-wrap: break-word;
-  text-align: center; /* 데이터 중앙 정렬 */
+  text-align: center;
 }
 
 .text-center {
@@ -220,6 +220,7 @@ function handleEdit(reportId, selectedOption) {
   font-weight: bold;
 }
 
+/* 테이블 반응형 설정 */
 .table-responsive {
   overflow-x: hidden;
   overflow-y: hidden;
@@ -260,6 +261,11 @@ function handleEdit(reportId, selectedOption) {
 
   .dropdown-menu {
     font-size: 0.75rem;
+  }
+
+  /* 상세 버튼 열 항상 보이도록 설정 */
+  .detail-button-column {
+    display: table-cell !important;
   }
 }
 </style>

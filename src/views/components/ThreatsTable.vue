@@ -15,8 +15,8 @@
               <th class="text-xs attachment-column">첨부파일</th>
               <th class="text-xs bodyurl-column">본문 URL</th>
               <th class="text-xs status-column">상태</th>
-              <th class="text-xs edit-column">수정</th> <!-- 수정 column before 대응 -->
-              <th class="text-xs response-column">대응</th> <!-- 대응 column after 수정 -->
+              <th class="text-xs edit-column">수정</th>
+              <th class="text-xs response-column">대응</th>
             </tr>
           </thead>
           <tbody>
@@ -33,7 +33,7 @@
                 <td :class="['text-xs', { 'text-danger font-weight-bold': ['피싱', '악성코드'].includes(report.status) }]">
                   {{ report.status }}
                 </td>
-                <!-- 수정 button in its own column with reduced padding -->
+                <!-- 수정 드롭다운 -->
                 <td class="edit-column">
                   <button
                     class="btn btn-warning btn-sm edit-button dropdown-toggle"
@@ -51,22 +51,29 @@
                     <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
                   </ul>
                 </td>
-                <!-- 대응 button in its own column -->
+                <!-- 대응 드롭다운 -->
                 <td class="response-column">
-                  <button class="btn btn-icon btn-sm" @click="toggleResponse(report.id)">
-                    <i class="fas fa-ellipsis-v"></i>
+                  <button
+                    class="btn btn-secondary btn-sm response-button dropdown-toggle"
+                    type="button"
+                    :id="'responseDropdownButton-' + report.id"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    대응
                   </button>
+                  <ul class="dropdown-menu" :aria-labelledby="'responseDropdownButton-' + report.id">
+                    <li><a class="dropdown-item" href="#" @click.prevent="blockSender(report.id)">발신자 차단</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="blockUrl(report.id)">URL 차단</a></li>
+                  </ul>
                 </td>
               </tr>
-              <tr v-if="report.showResponse" class="response-row">
+              <!-- 모바일에서만 보이는 첨부파일 및 본문 URL 박스 -->
+              <tr v-show="isMobile" class="mobile-info-row">
                 <td colspan="9">
-                  <div class="response-box">
-                    <button class="btn btn-sm btn-danger me-2" @click="blockSender(report.id)">
-                      <i class="fas fa-ban me-1"></i> 발신자 차단
-                    </button>
-                    <button class="btn btn-sm btn-secondary" @click="blockUrl(report.id)">
-                      <i class="fas fa-link me-1"></i> URL 차단
-                    </button>
+                  <div class="mobile-info-box">
+                    <div><strong>첨부파일:</strong> {{ report.details.attachment }}</div>
+                    <div><strong>본문 URL:</strong> <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a></div>
                   </div>
                 </td>
               </tr>
@@ -92,19 +99,19 @@
 import { ref, computed } from 'vue';
 import ArgonPagination from '../../components/ArgonPagination.vue';
 
-// 신고 데이터 초기화
-const reports = ref(generateDummyData());
+// 모바일 여부 판단
+const isMobile = ref(window.innerWidth <= 576);
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth <= 576;
+});
 
-// 현재 페이지와 페이지 당 항목 수 설정
+// 신고 데이터 설정
+const reports = ref(generateDummyData());
 const currentPage = ref(1);
 const pageSize = 20;
-
-// '피싱'과 '악성코드' 상태의 신고만 필터링
 const filteredReports = computed(() => {
   return reports.value.filter(report => ['피싱', '악성코드'].includes(report.status));
 });
-
-// 페이징 처리된 신고 데이터
 const paginatedReports = computed(() => {
   const start = (currentPage.value - 1) * pageSize;
   const end = start + pageSize;
@@ -139,20 +146,10 @@ function generateDummyData() {
   }));
 }
 
-// 대응 정보 표시 토글 함수
-function toggleResponse(reportId) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    report.showResponse = !report.showResponse;
-  }
-}
-
-// 페이지 변경 핸들러
 function updateCurrentPage(newPage) {
   currentPage.value = newPage;
 }
 
-// 상태 수정 핸들러 (현재는 '피싱', '악성코드', '캠페인', '오신고' 선택 가능)
 function handleEdit(reportId, selectedOption) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
@@ -160,78 +157,75 @@ function handleEdit(reportId, selectedOption) {
   }
 }
 
-// 발신자 차단 핸들러
 function blockSender(reportId) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
-    // 발신자 차단 로직 구현
     alert(`발신자 ${report.details.sender}을(를) 차단했습니다.`);
   }
 }
 
-// URL 차단 핸들러
 function blockUrl(reportId) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
-    // URL 차단 로직 구현
     alert(`URL ${report.details.bodyUrl}을(를) 차단했습니다.`);
   }
 }
 </script>
 
 <style scoped>
-/* 박스 모델 설정 */
-.table, .table th, .table td {
-  box-sizing: border-box;
-  text-align: center; /* 중앙 정렬 */
+/* 일반 스타일 */
+
+/* 일반 스타일 */
+
+.table-container {
+  overflow-x: auto;
+  width: 100%;
 }
 
-/* 페이드 트랜지션 */
-.fade-enter-active, .fade-leave-active {
+.table {
+  width: 100%;
+  table-layout: auto;
+  box-sizing: border-box;
+}
+
+.table th,
+.table td {
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 0.75rem;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  padding: 8px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s;
 }
-.fade-enter-from, .fade-leave-to {
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-/* 응답 박스 스타일 */
 .response-box {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap; /* 버튼 감싸기 허용 */
+  flex-wrap: wrap;
 }
 
-/* 버튼 색상 설정 */
 .btn-danger {
   background-color: #dc3545;
   border: none;
 }
+
 .btn-secondary {
   background-color: #6c757d;
   border: none;
 }
 
-/* 응답 행 스타일 */
-.response-row {
-  background-color: #f1f3f5;
-  animation: fadeIn 0.5s ease-in-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* 테이블 글자 크기 및 줄 바꿈 */
-.table th, .table td {
-  font-size: 0.75rem;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-  text-align: center; /* 모든 테이블 셀 중앙 정렬 */
-}
-
-/* 대응 버튼 스타일 간소화 */
 .btn-icon {
   background: none;
   border: none;
@@ -240,50 +234,106 @@ function blockUrl(reportId) {
   padding: 0;
 }
 
-/* 상태 텍스트 스타일 */
 .text-danger {
   color: #dc3545 !important;
 }
+
 .font-weight-bold {
   font-weight: bold;
 }
 
-/* 테이블 컨테이너 수정: 수평 스크롤 허용 */
-.table-container {
-  overflow-x: auto;
+/* 각 열의 최소 너비 설정 */
+
+.number-column {
+  min-width: 5%;
 }
 
-/* 각 열에 대해 고정된 너비 설정 */
-.number-column { width: 5%; }
-.date-column { width: 10%; }
-.sender-column { width: 18%; }
-.title-column { width: 12%; }
-.attachment-column { width: 10%; }
-.bodyurl-column { width: 13%; }
-.status-column { width: 10%; }
-.edit-column { width: 10%; }
-.response-column { width: 5%; }
+.date-column {
+  min-width: 10%;
+}
 
-/* 수정 버튼 패딩 조정 */
-.edit-button {
+.sender-column {
+  min-width: 15%;
+}
+
+.title-column {
+  min-width: 15%;
+}
+
+.attachment-column {
+  min-width: 12%;
+}
+
+.bodyurl-column {
+  min-width: 5%;
+}
+
+.status-column {
+  min-width: 10%;
+}
+
+.edit-column {
+  min-width: 10%;
+}
+
+.response-column {
+  min-width: 5%;
+}
+
+.edit-button,
+.response-button {
   padding-left: 6px;
   padding-right: 6px;
 }
 
-/* 셀 패딩 조정 */
-.table th, .table td {
+.table th,
+.table td {
   padding: 8px;
 }
 
-/* 반응형 디자인: 작은 화면에서 열 숨기기 및 버튼 크기 조정 */
+/* 모바일 스타일 */
+
 @media (max-width: 576px) {
-  .table th, .table td {
-    font-size: 0.65rem;
-    padding: 6px;
+  .table-container {
+    overflow-x: auto;
   }
 
+  .table {
+    width: 100%;
+    table-layout: fixed; /* 테이블 레이아웃을 고정으로 설정 */
+  }
+
+  /* 숨길 열의 th와 td를 완전히 숨기기 */
+  .attachment-column,
+  .bodyurl-column,
+  .table th.attachment-column,
+  .table td.attachment-column,
+  .table th.bodyurl-column,
+  .table td.bodyurl-column {
+    display: none;
+  }
+
+  /* 남은 열의 너비를 재조정 */
+  .number-column,
+  .date-column,
+  .sender-column,
+  .title-column,
+  .status-column,
+  .edit-column,
+  .response-column {
+    width: 14.28%; /* 남은 7개의 열을 균등하게 분배 */
+  }
+
+  .table th,
+  .table td {
+    padding: 4px; /* 패딩 축소 */
+    font-size: 0.7rem; /* 글꼴 크기 축소 */
+    line-height: 1.2; /* 라인 높이 조정으로 행 높이 감소 */
+  }
+
+  /* 버튼 크기 조정 */
   .btn {
-    padding: 4px 6px;
+    padding: 2px 4px;
     font-size: 0.65rem;
   }
 
@@ -291,15 +341,17 @@ function blockUrl(reportId) {
     font-size: 0.75rem;
   }
 
-  /* 버튼 레이아웃 조정 */
-  .action-buttons {
-    flex-direction: column;
-    align-items: stretch;
+  /* 모바일 정보 박스 레이아웃 조정 */
+  .mobile-info-row .mobile-info-box {
+    padding: 6px;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    background-color: #f1f3f5;
+    border: 1px solid #ddd;
+    margin: 5px auto;
   }
 
-  .action-buttons .btn,
-  .action-buttons .dropdown {
-    width: 100%;
+  .mobile-info-box div {
     margin-bottom: 5px;
   }
 }
