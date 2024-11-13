@@ -15,7 +15,8 @@
               <th class="text-xs attachment-column">첨부파일</th>
               <th class="text-xs bodyurl-column">본문 URL</th>
               <th class="text-xs status-column">상태</th>
-              <th class="text-xs action-column">대응 / 수정</th>
+              <th class="text-xs edit-column">수정</th> <!-- 수정 column before 대응 -->
+              <th class="text-xs response-column">대응</th> <!-- 대응 column after 수정 -->
             </tr>
           </thead>
           <tbody>
@@ -32,33 +33,33 @@
                 <td :class="['text-xs', { 'text-danger font-weight-bold': ['피싱', '악성코드'].includes(report.status) }]">
                   {{ report.status }}
                 </td>
-                <td class="action-column">
-                  <div class="action-buttons">
-                    <button class="btn btn-sm bg-gradient-primary me-2" @click="toggleResponse(report.id)">
-                      대응
-                    </button>
-                    <div class="dropdown">
-                      <button
-                        class="btn btn-warning btn-sm dropdown-toggle"
-                        type="button"
-                        :id="'dropdownMenuButton-' + report.id"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        수정
-                      </button>
-                      <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
-                        <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
-                        <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
-                      </ul>
-                    </div>
-                  </div>
+                <!-- 수정 button in its own column with reduced padding -->
+                <td class="edit-column">
+                  <button
+                    class="btn btn-warning btn-sm edit-button dropdown-toggle"
+                    type="button"
+                    :id="'dropdownMenuButton-' + report.id"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    수정
+                  </button>
+                  <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
+                  </ul>
+                </td>
+                <!-- 대응 button in its own column -->
+                <td class="response-column">
+                  <button class="btn btn-icon btn-sm" @click="toggleResponse(report.id)">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </button>
                 </td>
               </tr>
               <tr v-if="report.showResponse" class="response-row">
-                <td colspan="8">
+                <td colspan="9">
                   <div class="response-box">
                     <button class="btn btn-sm btn-danger me-2" @click="blockSender(report.id)">
                       <i class="fas fa-ban me-1"></i> 발신자 차단
@@ -220,18 +221,6 @@ function blockUrl(reportId) {
   to { opacity: 1; }
 }
 
-/* 상세 박스 스타일 */
-.detail-box {
-  background-color: #f8f9fa;
-  padding: 10px;
-  border-left: 5px solid #007bff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  font-size: 0.875rem;
-}
-.detail-box table {
-  margin: 0;
-}
-
 /* 테이블 글자 크기 및 줄 바꿈 */
 .table th, .table td {
   font-size: 0.75rem;
@@ -245,11 +234,13 @@ function blockUrl(reportId) {
   text-align: center;
 }
 
-/* 버튼 스타일 조정 */
-.btn.bg-gradient-primary {
-  background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
-  color: #fff;
+/* 대응 버튼 스타일 간소화 */
+.btn-icon {
+  background: none;
   border: none;
+  color: #5e72e4;
+  font-size: 1rem;
+  padding: 0;
 }
 
 /* 상태 텍스트 스타일 */
@@ -262,51 +253,36 @@ function blockUrl(reportId) {
 
 /* 테이블 컨테이너 수정: 수평 스크롤 허용 */
 .table-container {
-  overflow-x: auto; /* 수평 스크롤 허용 */
+  overflow-x: auto;
 }
 
 /* 각 열에 대해 고정된 너비 설정 */
-.number-column {
-  width: 5%;
-}
-.date-column {
-  width: 10%;
-}
-.sender-column {
-  width: 18%;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-}
-.title-column {
-  width: 12%;
-}
-.attachment-column {
-  width: 10%;
-}
-.bodyurl-column {
-  width: 13%;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-}
-.status-column {
-  width: 10%;
-}
-.action-column {
-  width: 14%; /* 대응과 수정 버튼을 포함한 열 너비 조정 */
+.number-column { width: 5%; }
+.date-column { width: 10%; }
+.sender-column { width: 18%; }
+.title-column { width: 12%; }
+.attachment-column { width: 10%; }
+.bodyurl-column { width: 13%; }
+.status-column { width: 10%; }
+.edit-column { width: 10%; }
+.response-column { width: 5%; }
+
+/* 수정 버튼 패딩 조정 */
+.edit-button {
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 /* 셀 패딩 조정 */
 .table th, .table td {
-  padding: 8px; /* 패딩 줄이기 */
+  padding: 8px;
 }
 
 /* 반응형 디자인: 작은 화면에서 열 숨기기 및 버튼 크기 조정 */
 @media (max-width: 576px) {
   .table th, .table td {
     font-size: 0.65rem;
-    padding: 6px; /* 패딩 더 줄이기 */
+    padding: 6px;
   }
 
   .btn {
@@ -320,14 +296,14 @@ function blockUrl(reportId) {
 
   /* 버튼 레이아웃 조정 */
   .action-buttons {
-    flex-direction: column; /* 수직으로 쌓기 */
-    align-items: stretch; /* 버튼을 전체 너비로 */
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .action-buttons .btn,
   .action-buttons .dropdown {
-    width: 100%; /* 전체 너비로 설정 */
-    margin-bottom: 5px; /* 버튼 간격 추가 */
+    width: 100%;
+    margin-bottom: 5px;
   }
 }
 </style>
