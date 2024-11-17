@@ -1,8 +1,17 @@
 <script setup>
 import { reactive } from 'vue';
+import { useRouter } from 'vue-router'; // 라우터 사용을 위해 import
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 import CategoriesList from "./components/CategoriesList.vue";
+
+// 라우터 인스턴스 생성
+const router = useRouter();
+
+// 카드 클릭 시 경로 이동 함수 정의
+function navigateTo(path) {
+  router.push(path);
+}
 
 // 차트 데이터를 reactive 변수로 관리
 const chartData = reactive({
@@ -51,6 +60,7 @@ const chartData = reactive({
         <!-- 통계 카드들 -->
         <div class="row">
           <div class="col-lg-3 col-md-6 col-12">
+            <!-- 오늘의 신고 카드 (변경 없음) -->
             <mini-statistics-card
               title="오늘의 신고"
               value="23건"
@@ -63,6 +73,7 @@ const chartData = reactive({
             />
           </div>
           <div class="col-lg-3 col-md-6 col-12">
+            <!-- 미분류 신고 카드 (클릭 시 /tables 경로로 이동) -->
             <mini-statistics-card
               title="미분류 신고"
               value="34건"
@@ -72,9 +83,12 @@ const chartData = reactive({
                 background: 'bg-gradient-dark',
                 shape: 'rounded-circle',
               }"
+              @click="navigateTo('/tables')"
+              style="cursor: pointer;"
             />
           </div>
           <div class="col-lg-3 col-md-6 col-12">
+            <!-- 이달의 보안 위협 카드 (클릭 시 /threats 경로로 이동) -->
             <mini-statistics-card
               title="이달의 보안 위협"
               value="1"
@@ -84,9 +98,12 @@ const chartData = reactive({
                 background: 'bg-gradient-danger',
                 shape: 'rounded-circle',
               }"
+              @click="navigateTo('/threats')"
+              style="cursor: pointer;"
             />
           </div>
           <div class="col-lg-3 col-md-6 col-12">
+            <!-- 누적 신고 카드 (클릭 시 /reports 경로로 이동) -->
             <mini-statistics-card
               title="누적 신고"
               value="352,732"
@@ -96,6 +113,8 @@ const chartData = reactive({
                 background: 'bg-gradient-success',
                 shape: 'rounded-circle',
               }"
+              @click="navigateTo('/reports')"
+              style="cursor: pointer;"
             />
           </div>
         </div>
@@ -109,7 +128,7 @@ const chartData = reactive({
                 id="chart-line"
                 title="2025 Security 119"
                 description="<i class='fa fa-arrow-up text-success'></i>
-          <span class='font-weight-bold'>4% more</span> in 2024"
+              <span class='font-weight-bold'>4% more</span> in 2024"
                 :chart="chartData"
               />
             </div>

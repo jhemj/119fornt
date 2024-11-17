@@ -4,7 +4,6 @@ import { useRoute } from "vue-router";
 import SidenavItem from "./SidenavItem.vue";
 import SidenavCard from "./SidenavCard.vue";
 
-
 const getRoute = () => {
   const route = useRoute();
   const routeArr = route.path.split("/");
@@ -65,8 +64,8 @@ const getRoute = () => {
 
       <li class="nav-item">
         <sidenav-item
-          to="/rtl-page"
-          :class="getRoute() === 'rtl-page' ? 'active' : ''"
+          to="/threats"
+          :class="getRoute() === 'threats' ? 'active' : ''"
           navText="보안 위협"
         >
           <template v-slot:icon>
@@ -93,29 +92,6 @@ const getRoute = () => {
         </sidenav-item>
       </li>
 
-      <li class="nav-item">
-        <sidenav-item
-          to="/signin"
-          :class="getRoute() === 'signin' ? 'active' : ''"
-          navText="Sign In"
-        >
-          <template v-slot:icon>
-            <i class="ni ni-single-copy-04 text-danger text-sm opacity-10"></i>
-          </template>
-        </sidenav-item>
-      </li>
-
-      <li class="nav-item">
-        <sidenav-item
-          to="/signup"
-          :class="getRoute() === 'signup' ? 'active' : ''"
-          navText="Sign Up"
-        >
-          <template v-slot:icon>
-            <i class="ni ni-collection text-info text-sm opacity-10"></i>
-          </template>
-        </sidenav-item>
-      </li>
     </ul>
   </div>
 

@@ -1,11 +1,11 @@
 <template>
   <div class="card">
     <div class="card-header pb-0">
-      <h6>미분류 신고 리스트</h6>
+      <h6>전체 신고 리스트</h6>
     </div>
     <div class="card-body px-0 pt-0 pb-2">
       <div class="table-responsive p-0">
-        <table class="table align-items-center mb-0">
+        <table class="table align-items-center mb-0 text-center">
           <thead>
             <tr>
               <th class="text-xs">번호</th>
@@ -17,8 +17,8 @@
               <th class="text-xs">이메일</th>
               <th class="text-xs">제목</th>
               <th class="text-xs">상태</th>
-              <th class="text-xs">상세</th>
               <th class="text-xs">수정</th>
+              <th class="text-xs detail-button-column">상세</th> <!-- 상세 버튼 열 -->
             </tr>
           </thead>
           <tbody>
@@ -35,17 +35,13 @@
                 <td :class="['text-xs', { 'text-danger font-weight-bold': report.status === '피싱' || report.status === '악성코드' }]">
                   {{ report.status }}
                 </td>
-                <td>
-                  <button class="btn btn-sm bg-gradient-primary" @click="toggleDetails(report.id)">
-                    {{ report.showDetails ? '숨김' : '상세' }}
-                  </button>
-                </td>
+                <!-- 수정 버튼 -->
                 <td>
                   <div class="dropdown">
                     <button
-                      class="btn btn-warning btn-sm dropdown-toggle"
+                      class="btn btn-warning btn-sm edit-button dropdown-toggle"
                       type="button"
-                      id="dropdownMenuButton-{{ report.id }}"
+                      :id="'dropdownMenuButton-' + report.id"
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
@@ -58,6 +54,12 @@
                       <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
                     </ul>
                   </div>
+                </td>
+                <!-- 상세 버튼 -->
+                <td class="detail-button-column">
+                  <button @click="toggleDetails(report.id)" class="btn-icon">
+                    <span class="gradient-icon">{{ report.showDetails ? '▴' : '▾' }}</span>
+                  </button>
                 </td>
               </tr>
               <tr v-if="report.showDetails">
@@ -165,6 +167,8 @@ function handleEdit(reportId, selectedOption) {
 </script>
 
 <style scoped>
+/* 일반 스타일 */
+
 .detail-box {
   background-color: #f8f9fa;
   padding: 10px;
@@ -177,23 +181,41 @@ function handleEdit(reportId, selectedOption) {
   margin: 0;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   font-size: 0.75rem;
   white-space: normal;
   word-wrap: break-word;
+  text-align: center;
 }
 
 .text-center {
   text-align: center;
 }
 
-/* 버튼 스타일 조정 */
-.btn.bg-gradient-primary {
-  background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
-  color: #fff;
-  border: none;
+/* 수정 버튼 패딩 조정 */
+.edit-button {
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
+/* 상세 버튼 스타일 */
+.btn-icon {
+  background: none;
+  border: none;
+  color: #5e72e4;
+  font-size: 1rem;
+  padding: 0;
+}
+
+/* 파란색 그라데이션 아이콘 스타일 */
+.gradient-icon {
+  background: linear-gradient(90deg, #0072ff, #0090ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 상태 텍스트 스타일 */
 .text-danger {
   color: #dc3545 !important;
 }
@@ -202,35 +224,43 @@ function handleEdit(reportId, selectedOption) {
   font-weight: bold;
 }
 
+/* 테이블 반응형 설정 */
+.table-responsive {
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
 /* 반응형 디자인 */
+
+/* 화면 크기가 1200px 이하일 때 */
 @media (max-width: 1200px) {
-  /* 호칭 열 숨김 */
   .title-column {
     display: none;
   }
 }
 
+/* 화면 크기가 992px 이하일 때 */
 @media (max-width: 992px) {
-  /* 부문 열 숨김 */
   .sector-column {
     display: none;
   }
 }
 
+/* 화면 크기가 768px 이하일 때 */
 @media (max-width: 768px) {
-  /* 회사 열 숨김 */
   .company-column {
     display: none;
   }
 }
 
+/* 화면 크기가 576px 이하일 때 */
 @media (max-width: 576px) {
-  /* 이름 열 숨김 */
   .name-column {
     display: none;
   }
 
-  .table th, .table td {
+  .table th,
+  .table td {
     font-size: 0.65rem;
   }
 
@@ -241,6 +271,12 @@ function handleEdit(reportId, selectedOption) {
 
   .dropdown-menu {
     font-size: 0.75rem;
+  }
+
+  /* 상세 버튼 열 항상 보이도록 설정 */
+  /* 선택자 구체성을 높여 우선순위 확보 */
+  .table-responsive .table .detail-button-column {
+    display: table-cell !important;
   }
 }
 </style>

@@ -21,6 +21,7 @@ const closeMenu = () => {
   }, 100);
 };
 </script>
+
 <template>
   <nav
     class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl"
@@ -35,16 +36,7 @@ const closeMenu = () => {
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarResponsive">
         <ul class="navbar-nav justify-content-end">
-          <li class="nav-item d-flex align-items-center">
-            <router-link
-              :to="{ name: 'Signin' }"
-              class="nav-link font-weight-bold text-white"
-              target="_blank"
-            >
-              <i class="fa fa-user me-sm-2"></i>
-              <span class="d-sm-inline d-none">Sign In</span>
-            </router-link>
-          </li>
+          <!-- Signin 링크 삭제 -->
           <li class="nav-item d-xl-none d-flex align-items-center">
             <a href="#" @click="minimizeSidebar" class="nav-link text-white" id="iconNavbarSidenav">
               <div class="sidenav-toggler-inner">
@@ -189,6 +181,6 @@ const closeMenu = () => {
 .page-title {
   color: white;
   margin-top: 10px;
-  margin-bottom: 0px; /* 제목을 아래로 내리기 위해 여백 설정 */
+  margin-bottom: 0px;
 }
 </style>

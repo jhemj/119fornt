@@ -1,24 +1,14 @@
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";
-import { activateDarkMode, deactivateDarkMode } from "@/assets/js/dark-mode";
 
 const store = useStore();
 
 // State
 const isRTL = computed(() => store.state.isRTL);
-const darkMode = computed(() => store.state.darkMode);
 
 // Methods
 const toggleConfigurator = () => store.commit("toggleConfigurator");
-const setSidebarType = (type) => store.commit("sidebarType", type);
-
-const toggleDarkMode = () => {
-  const newMode = !darkMode.value;
-  store.commit("setDarkMode", newMode); // Assuming there's a mutation to set dark mode
-  setSidebarType(newMode ? "bg-default" : "bg-white");
-  newMode ? activateDarkMode() : deactivateDarkMode();
-};
 </script>
 
 <template>
@@ -40,17 +30,7 @@ const toggleDarkMode = () => {
       </div>
       <hr class="my-1 horizontal dark" />
       <div class="pt-0 card-body pt-sm-3">
-        <div class="mt-2 mb-5 d-flex">
-          <h6 class="mb-0" :class="isRTL ? 'ms-2' : ''">Light / Dark</h6>
-          <div class="form-check form-switch ps-0 ms-auto my-auto">
-            <input
-              class="form-check-input mt-1 ms-auto"
-              type="checkbox"
-              :checked="darkMode"
-              @change="toggleDarkMode"
-            />
-          </div>
-        </div>
+        <!-- Light / Dark Toggle UI Removed -->
       </div>
     </div>
   </div>
