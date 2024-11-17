@@ -211,7 +211,7 @@ function handleEdit(reportId, selectedOption) {
 /* 파란색 그라데이션 아이콘 스타일 */
 .gradient-icon {
   background: linear-gradient(90deg, #0072ff, #0090ff);
-  -webkit-background-clip: text;
+  /* -webkit-background-clip: text; */
   -webkit-text-fill-color: transparent;
 }
 

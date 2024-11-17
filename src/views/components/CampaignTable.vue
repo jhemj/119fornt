@@ -92,7 +92,7 @@ const paginatedReports = computed(() => {
 
 function generateDummyData() {
   const sender = ['cs.hong@ktit.com', 'minsu.choi@gmail.com', 'mano.kim@kts.com'];
-  const titles = ['A사 이직제안', '연금상품 홍보', '복지몰 이벤트', '대출 권유'];
+  const titles = ['이직제안', '연금정보', '쇼핑이벤트', '대출권유'];
   const sectors = ['사원', '대리', '과장', '차장', '부장'];
   const rates = ['0.83', '0.97', '0.58', '0.71', '0.92'];
 
