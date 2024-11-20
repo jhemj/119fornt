@@ -24,17 +24,7 @@
           filter="url(#light-shadow)" 
         />
         
-        <!-- Variable 1 (빨강) -->
-        <path
-          d="M 20 220 A 160 160 0 0 1 380 220"
-          fill="none"
-          stroke="#ff4d4f"
-          stroke-width="30"
-          :stroke-dasharray="computedDashArray1"
-          :stroke-dashoffset="computedDashOffset1"
-          stroke-linecap="round"
-          filter="url(#light-shadow)"
-        />
+        
         
         <!-- Variable 2 (주황) -->
         <path
@@ -43,11 +33,24 @@
           stroke="#faad14"
           stroke-width="30"
           :stroke-dasharray="computedDashArray2"
-          :stroke-dashoffset="computedDashOffset2"
+          :stroke-dashoffset="-computedDashArray1"
           stroke-linecap="round"
           filter="url(#light-shadow)"
         />
         
+        <!-- Variable 1 (빨강) -->
+        <path
+          d="M 20 220 A 160 160 0 0 1 380 220"
+          fill="none"
+          stroke="#ff4d4f"
+          stroke-width="30"
+          :stroke-dasharray="computedDashArray1"
+          :stroke-dashoffset="0"
+          stroke-linecap="round"
+          filter="url(#light-shadow)"
+        />
+
+
         <!-- 총합 값 표시 -->
         <text x="200" y="150" text-anchor="middle" class="gauge-value">
           신고율 : {{ parseInt((props.value1 * 100) / totalValue) }}%
@@ -61,7 +64,7 @@
     <!-- 범례 표시 -->
     <div class="legend">
       <div class="legend-item">
-        <span class="color-box" style="background-color: #ff4d4f" ></span>
+        <span class="color-box" style="background-color: #ff4d4f"></span>
         <span>신고 : {{ props.value1 }}</span>
       </div>
       <div class="legend-item">
@@ -80,23 +83,24 @@ const props = defineProps({
   value2: { type: Number, default: 1500 }, // 미신고
 });
 
-// 반원의 전체 길이 (확대된 반원의 길이)
-const fullCircle = 1005.3; // (π * r) where r=160: π * 160 ≈ 502.65
+// 반원의 실제 길이 계산 (반경 r=160)
+const fullCircle = 567
 
 // 총합 계산
 const totalValue = computed(() => props.value1 + props.value2);
 
 // 각 변수의 stroke-dasharray 및 stroke-dashoffset 계산
 const computedDashArray1 = computed(() => (fullCircle * props.value1) / totalValue.value);
-const computedDashArray2 = computed(() => (fullCircle * props.value2) / totalValue.value);
+// const computedDashOffset1 = computed(() => fullCircle - computedDashArray1.value);
 
-// const computedDashOffset1 = computed(() => - (fullCircle - computedDashArray1.value));
-const computedDashOffset2 = computed(() => - (fullCircle - computedDashArray2.value));
+const computedDashArray2 = computed(() => (fullCircle * props.value2) / totalValue.value);
+// const computedDashOffset2 = computed(() => fullCircle - computedDashArray1.value);
 
 // 상태 텍스트 계산
 const statusText = computed(() => {
-  if (totalValue.value < 30) return "Poor";
-  if (totalValue.value < 70) return "Fair";
+  const ratio = (props.value1 / totalValue.value) * 100;
+  if (ratio < 30) return "Poor";
+  if (ratio < 70) return "Fair";
   return "Good";
 });
 </script>
@@ -138,7 +142,7 @@ path {
 
 .legend-item {
   display: flex;
-  align-items: left;
+  align-items: center; /* 'left'는 잘못된 값으로 'center'로 수정 */
   gap: 15px; /* 증가된 간격 */
   font-size: 20px;
 }
@@ -147,9 +151,50 @@ path {
   width: 30px; /* 확대된 색상 박스 */
   height: 30px; /* 확대된 색상 박스 */
   border-radius: 6px;
-
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 추가된 그림자 */
   border-radius: 8px; /* 선택 사항: 그림자가 더 자연스럽게 보이도록 경계선 반경 추가 */
-  padding: 15px; /* 선택 사항: 내부 여백 추가 */
+  /* padding: 15px; */ /* 제거: 색상 박스에 padding은 불필요 */
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  /* 호칭 열 숨김 */
+  .title-column {
+    display: none;
+  }
+}
+
+@media (max-width: 992px) {
+  /* 부문 열 숨김 */
+  .sector-column {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 회사 열 숨김 */
+  .company-column {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  /* 이름 열 숨김 */
+  .name-column {
+    display: none;
+  }
+
+  .table th, .table td {
+    font-size: 0.65rem;
+  }
+
+  .btn {
+    padding: 4px 8px;
+    font-size: 0.65rem;
+  }
+
+  .dropdown-menu {
+    font-size: 0.75rem;
+  }
 }
 </style>

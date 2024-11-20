@@ -42,7 +42,7 @@ const chartData = reactive({
         <!-- 통계 카드들 -->
           <div class="card" id="app">
           
-            <GaugeChart :value1="20" :value2="35" />
+            <GaugeChart :value1="28635" :value2="15143" />
   
           </div>
         </div>

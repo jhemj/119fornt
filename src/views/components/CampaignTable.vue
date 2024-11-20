@@ -12,7 +12,7 @@
               <th class="text-xs">전송일</th>
               <th class="text-xs company-column">발신자</th>
               <th class="text-xs sector-column">수신 대상</th>
-              <th class="text-xs">내용</th>
+              <th class="text-xs title-column">내용</th>
               <th class="text-xs">신고율</th>
               <th class="text-xs">본문 보기</th>
             </tr>
@@ -143,6 +143,8 @@ function updateCurrentPage(newPage) {
   font-size: 0.75rem;
   white-space: normal;
   word-wrap: break-word;
+  text-align: center; /* 중앙 정렬 추가 */
+  vertical-align: middle; /* 세로 중앙 정렬 */
 }
 
 .text-center {
