@@ -98,6 +98,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import ArgonPagination from '../../components/ArgonPagination.vue';
+import { useToast } from 'vue-toastification'; // vue-toastification 임포트
+
+const toast = useToast(); // 토스트 인스턴스 생성
 
 // 모바일 여부 판단
 const isMobile = ref(window.innerWidth <= 576);
@@ -154,27 +157,48 @@ function handleEdit(reportId, selectedOption) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
     report.status = selectedOption;
+
+    // 토스트 알림 표시 (성공 메시지)
+    toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
+      timeout: 3000,
+      closeOnClick: true,
+      pauseOnHover: true
+    });
   }
 }
 
 function blockSender(reportId) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
-    alert(`발신자 ${report.details.sender}을(를) 차단했습니다.`);
+    // 발신자 차단 로직 (예: 데이터베이스 업데이트 등)
+    // 여기서는 단순히 알림만 표시
+
+    // 토스트 알림 표시 (오류 메시지)
+    toast.error(`"${report.details.sender}" 가 차단되었습니다.`, {
+      timeout: 3000,
+      closeOnClick: true,
+      pauseOnHover: true
+    });
   }
 }
 
 function blockUrl(reportId) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
-    alert(`URL ${report.details.bodyUrl}을(를) 차단했습니다.`);
+    // URL 차단 로직 (예: 데이터베이스 업데이트 등)
+    // 여기서는 단순히 알림만 표시
+
+    // 토스트 알림 표시 (오류 메시지)
+    toast.error(`"${report.details.bodyUrl}" 가 차단되었습니다.`, {
+      timeout: 3000,
+      closeOnClick: true,
+      pauseOnHover: true
+    });
   }
 }
 </script>
 
 <style scoped>
-/* 일반 스타일 */
-
 /* 일반 스타일 */
 
 .table-container {

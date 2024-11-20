@@ -36,29 +36,53 @@
                   {{ report.status }}
                 </td>
                 <!-- 수정 버튼 -->
-                <td>
-                  <div class="dropdown">
-                    <button
-                      class="btn btn-warning btn-sm edit-button dropdown-toggle"
-                      type="button"
-                      :id="'dropdownMenuButton-' + report.id"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false"
-                    >
-                      수정
-                    </button>
-                    <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
-                      <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
-                      <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
-                      <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
-                      <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
-                    </ul>
-                  </div>
+                <td class="edit-column">
+                  <button
+                    class="btn btn-warning btn-sm edit-button dropdown-toggle"
+                    type="button"
+                    :id="'dropdownMenuButton-' + report.id"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    수정
+                  </button>
+                  <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
+                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
+                  </ul>
                 </td>
                 <!-- 상세 버튼 -->
                 <td class="detail-button-column">
-                  <button @click="toggleDetails(report.id)" class="btn-icon">
-                    <span class="gradient-icon">{{ report.showDetails ? '▴' : '▾' }}</span>
+                  <button
+                    @click="toggleDetails(report.id)"
+                    class="detail-button"
+                    :aria-expanded="report.showDetails ? 'true' : 'false'"
+                    :aria-controls="'detail-box-' + report.id"
+                  >
+                    <svg
+                      v-if="!report.showDetails"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                    >
+                      <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                    <svg
+                      v-else
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                    >
+                      <path fill-rule="evenodd" d="M1.646 11.354a.5.5 0 0 1 .708 0L8 5.707l5.646 5.647a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1-.708 0l-6 6a.5.5 0 0 1 0-.708z"/>
+                    </svg>
                   </button>
                 </td>
               </tr>
@@ -109,6 +133,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import ArgonPagination from '../../components/ArgonPagination.vue';
+import { useToast } from 'vue-toastification'; // vue-toastification 임포트
+
+const toast = useToast(); // 토스트 인스턴스 생성
 
 const reports = ref(generateDummyData());
 const currentPage = ref(1);
@@ -162,6 +189,14 @@ function handleEdit(reportId, selectedOption) {
   const report = reports.value.find(r => r.id === reportId);
   if (report) {
     report.status = selectedOption;
+
+    // 토스트 알림 표시
+    toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
+      // 옵션을 필요에 따라 조정 가능
+      timeout: 3000,
+      closeOnClick: true,
+      pauseOnHover: true
+    });
   }
 }
 </script>
@@ -213,6 +248,28 @@ function handleEdit(reportId, selectedOption) {
   background: linear-gradient(90deg, #0072ff, #0090ff);
   /* -webkit-background-clip: text; */
   -webkit-text-fill-color: transparent;
+}
+
+/* 상세 버튼 스타일 */
+.detail-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-button svg {
+  transition: transform 0.3s ease;
+  width: 16px;
+  height: 16px;
+  fill: #5e72e4; /* 원하는 색상으로 변경 가능 */
+}
+
+.detail-button:focus {
+  outline: none;
 }
 
 /* 상태 텍스트 스타일 */
