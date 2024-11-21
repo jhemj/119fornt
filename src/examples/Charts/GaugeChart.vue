@@ -1,7 +1,7 @@
 <template>
-  <div class="gauge-chart-container">
-    <div class="gauge-chart">
-      <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <div class="card z-index-2">
+    <div class="p-3 card-body">
+      <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
         <!-- 그림자 필터 정의 -->
         <defs>
           <filter id="light-shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -23,8 +23,6 @@
           stroke-width="30"
           filter="url(#light-shadow)" 
         />
-        
-        
         
         <!-- Variable 2 (주황) -->
         <path
@@ -137,7 +135,7 @@ path {
   align-items: flex-start;
   align-self: flex-start; /* 기존 라인 유지 */
   gap: 15px; /* 증가된 간격 */
-  padding-left: 50px; /* 기존 여백 유지 */
+  padding: 16px 16px 16px 50px; /* 기존 여백 유지 */
 }
 
 .legend-item {
@@ -153,7 +151,6 @@ path {
   border-radius: 6px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 추가된 그림자 */
   border-radius: 8px; /* 선택 사항: 그림자가 더 자연스럽게 보이도록 경계선 반경 추가 */
-  /* padding: 15px; */ /* 제거: 색상 박스에 padding은 불필요 */
 }
 
 /* 반응형 디자인 */
