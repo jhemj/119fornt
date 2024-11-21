@@ -1,339 +1,384 @@
 <template>
-  <div class="card">
-    <div class="card-header pb-0">
-      <h6>전체 신고 리스트</h6>
-    </div>
-    <div class="card-body px-0 pt-0 pb-2">
-      <div class="table-responsive p-0">
-        <table class="table align-items-center mb-0 text-center">
-          <thead>
+  <div class="card p-3 shadow-sm">
+    <h5 class="mb-3">전체 신고 리스트</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="text-sm">번호</th>
+            <th scope="col" class="text-sm">접수일</th>
+            <th scope="col" class="text-sm d-none d-md-table-cell company-column">회사</th>
+            <th scope="col" class="text-sm d-none d-lg-table-cell sector-column">부문</th>
+            <th scope="col" class="text-sm d-none d-xl-table-cell title-column">호칭</th>
+            <th scope="col" class="text-sm d-none d-xxl-table-cell name-column">이름</th>
+            <th scope="col" class="text-sm long-text">이메일</th>
+            <th scope="col" class="text-sm long-text">제목</th>
+            <th scope="col" class="text-sm">상태</th>
+            <th scope="col" class="text-sm">수정</th>
+            <th scope="col" class="text-sm">상세</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template v-for="report in reports" :key="report.id">
             <tr>
-              <th class="text-xs">번호</th>
-              <th class="text-xs">접수일</th>
-              <th class="text-xs company-column">회사</th>
-              <th class="text-xs sector-column">부문</th>
-              <th class="text-xs title-column">호칭</th>
-              <th class="text-xs name-column">이름</th>
-              <th class="text-xs">이메일</th>
-              <th class="text-xs">제목</th>
-              <th class="text-xs">상태</th>
-              <th class="text-xs">수정</th>
-              <th class="text-xs detail-button-column">상세</th> <!-- 상세 버튼 열 -->
+              <td class="align-middle text-sm">{{ report.id }}</td>
+              <td class="align-middle text-sm date-column">{{ report.receivedDate }}</td>
+              <td class="align-middle text-sm d-none d-md-table-cell company-column">{{ report.company }}</td>
+              <td class="align-middle text-sm d-none d-lg-table-cell sector-column">{{ report.sector }}</td>
+              <td class="align-middle text-sm d-none d-xl-table-cell title-column">{{ report.title }}</td>
+              <td class="align-middle text-sm d-none d-xxl-table-cell name-column">{{ report.name }}</td>
+              <td class="align-middle text-sm long-text">{{ report.email }}</td>
+              <td class="align-middle text-sm long-text">{{ report.subject }}</td>
+              <td :class="['text-sm', statusClass(report.status)]">{{ report.status || '미분류' }}</td>
+              <!-- 수정 열: 드롭다운 구조 변경 -->
+              <td class="align-middle text-center text-sm edit-column">
+                <button
+                  class="btn btn-warning btn-sm edit-button dropdown-toggle"
+                  type="button"
+                  :id="'dropdownMenuButton-' + report.id"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  수정
+                </button>
+                <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
+                  <li v-for="option in statusOptions" :key="option">
+                    <a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, option)">
+                      {{ option }}
+                    </a>
+                  </li>
+                </ul>
+              </td>
+              <td class="text-sm">
+                <button
+                  class="btn btn-sm btn-info toggle-button"
+                  @click="emitToggleDetails(report.id)"
+                  :aria-expanded="report.showDetails"
+                  :aria-controls="'detail-' + report.id"
+                  :aria-label="report.showDetails ? '상세 정보 숨기기' : '상세 정보 보기'"
+                >
+                  {{ report.showDetails ? '-' : '+' }}
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            <template v-for="report in paginatedReports" :key="report.id">
-              <tr>
-                <td class="text-xs">{{ report.id }}</td>
-                <td class="text-xs">{{ report.receivedDate }}</td>
-                <td class="text-xs company-column">{{ report.company }}</td>
-                <td class="text-xs sector-column">{{ report.sector }}</td>
-                <td class="text-xs title-column">{{ report.title }}</td>
-                <td class="text-xs name-column">{{ report.name }}</td>
-                <td class="text-xs">{{ report.email }}</td>
-                <td class="text-xs">{{ report.subject }}</td>
-                <td :class="['text-xs', { 'text-danger font-weight-bold': report.status === '피싱' || report.status === '악성코드' }]">
-                  {{ report.status }}
-                </td>
-                <!-- 수정 버튼 -->
-                <td class="edit-column">
-                  <button
-                    class="btn btn-warning btn-sm edit-button dropdown-toggle"
-                    type="button"
-                    :id="'dropdownMenuButton-' + report.id"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    수정
-                  </button>
-                  <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
-                  </ul>
-                </td>
-                <!-- 상세 버튼 -->
-                <td class="detail-button-column">
-                  <button
-                    @click="toggleDetails(report.id)"
-                    class="detail-button"
-                    :aria-expanded="report.showDetails ? 'true' : 'false'"
-                    :aria-controls="'detail-box-' + report.id"
-                  >
-                    <svg
-                      v-if="!report.showDetails"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                      aria-hidden="true"
-                    >
-                      <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                    <svg
-                      v-else
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                      aria-hidden="true"
-                    >
-                      <path fill-rule="evenodd" d="M1.646 11.354a.5.5 0 0 1 .708 0L8 5.707l5.646 5.647a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1-.708 0l-6 6a.5.5 0 0 1 0-.708z"/>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="report.showDetails">
-                <td colspan="11">
-                  <div class="detail-box">
-                    <table class="table table-bordered">
-                      <tbody>
-                        <tr>
-                          <th class="text-xs">발신자</th>
-                          <td class="text-xs">{{ report.details.sender }}</td>
-                        </tr>
-                        <tr>
-                          <th class="text-xs">제목</th>
-                          <td class="text-xs">{{ report.details.subject }}</td>
-                        </tr>
-                        <tr>
-                          <th class="text-xs">첨부파일</th>
-                          <td class="text-xs">{{ report.details.attachment }}</td>
-                        </tr>
-                        <tr>
-                          <th class="text-xs">URL</th>
-                          <td class="text-xs"><a :href="report.details.bodyUrl">{{ report.details.bodyUrl }}</a></td>
-                        </tr>
-                      </tbody>
-                    </table>
+            <!-- 단일 상세 정보 박스 -->
+            <tr v-if="report.showDetails" :key="'detail-' + report.id">
+              <td colspan="11">
+                <div v-if="!isMobile" class="detail-box p-3 bg-light rounded">
+                  <div class="row">
+                    <div class="col-md-3"><strong>발신자:</strong></div>
+                    <div class="col-md-9">{{ report.details.sender }}</div>
                   </div>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
-      </div>
-      <div class="text-center">
-        <ArgonPagination
-          :totalItems="reports.length"
-          :pageSize="pageSize"
-          :currentPage="currentPage"
-          color="primary"
-          size="sm"
-          @update:currentPage="updateCurrentPage"
-        />
-      </div>
+                  <div class="row mt-2">
+                    <div class="col-md-3"><strong>제목:</strong></div>
+                    <div class="col-md-9">{{ report.details.subject }}</div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-3"><strong>첨부파일:</strong></div>
+                    <div class="col-md-9">{{ report.details.attachment }}</div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-3"><strong>URL:</strong></div>
+                    <div class="col-md-9">
+                      <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="mobile-info-box">
+                  <div><strong>발신자:</strong> {{ report.details.sender }}</div>
+                  <div><strong>제목:</strong> {{ report.details.subject }}</div>
+                  <div><strong>첨부파일:</strong> {{ report.details.attachment }}</div>
+                  <div><strong>URL:</strong> <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a></div>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
     </div>
+    <!-- 페이징 -->
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center mt-3">
+        <li :class="['page-item', { disabled: currentPage === 1 }]">
+          <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">이전</a>
+        </li>
+        <li
+          v-for="page in totalPages"
+          :key="page"
+          :class="['page-item', { active: currentPage === page }]"
+        >
+          <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+        </li>
+        <li :class="['page-item', { disabled: currentPage === totalPages }]">
+          <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">다음</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import ArgonPagination from '../../components/ArgonPagination.vue';
-import { useToast } from 'vue-toastification'; // vue-toastification 임포트
+import { computed, ref } from "vue";
 
-const toast = useToast(); // 토스트 인스턴스 생성
-
-const reports = ref(generateDummyData());
-const currentPage = ref(1);
-const pageSize = 20;
-
-const paginatedReports = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  const end = start + pageSize;
-  return reports.value.slice(start, end);
+// Props
+const props = defineProps({
+  reports: {
+    type: Array,
+    required: true,
+  },
+  currentPage: {
+    type: Number,
+    required: true,
+  },
+  pageSize: {
+    type: Number,
+    required: true,
+  },
+  totalItems: {
+    type: Number,
+    required: true,
+  },
 });
 
-function generateDummyData() {
-  const statuses = ['피싱', '악성코드', '캠페인', '오신고'];
-  const companies = ['KT', 'KT cs', 'KT Cloud'];
-  const sectors = ['기술혁신부문', '전략신사업부문', '대구경북광역본부', 'E부문'];
-  const titles = ['사원', '대리', '과장', '차장', '부장'];
-  const names = ['김철수', '이영희', '박지성', '최영미', '장민호', '윤소라', '서태지', '한가림', '주영훈', '남주리'];
+// Emit events
+const emit = defineEmits(["update:currentPage", "toggle-details", "update-status"]);
 
-  return Array.from({ length: 100 }, (_, i) => ({
-    id: i + 1,
-    receivedDate: `20${Math.floor(Math.random() * 20 + 1)}-${String(Math.floor(Math.random() * 12 + 1)).padStart(2, '0')}-${String(Math.floor(Math.random() * 28 + 1)).padStart(2, '0')}`,
-    company: companies[Math.floor(Math.random() * companies.length)],
-    sector: sectors[Math.floor(Math.random() * sectors.length)],
-    title: titles[Math.floor(Math.random() * titles.length)],
-    name: names[Math.floor(Math.random() * names.length)],
-    email: `${names[Math.floor(Math.random() * names.length)].toLowerCase()}@${companies[Math.floor(Math.random() * companies.length)].toLowerCase()}.com`,
-    subject: '보안 위협 관련 문의',
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    details: {
-      sender: `${Math.random().toString(36).substring(7)}@example.com`,
-      subject: '세부 주제 관련 문의',
-      attachment: '문서.pdf',
-      bodyUrl: 'http://example.com'
-    },
-    showDetails: false
-  }));
-}
+// 상태 옵션 배열
+const statusOptions = ["피싱", "악성코드", "캠페인", "오신고"];
 
-function toggleDetails(reportId) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    report.showDetails = !report.showDetails;
-  }
-}
-
-function updateCurrentPage(newPage) {
-  currentPage.value = newPage;
-}
-
+// 수정 핸들러
 function handleEdit(reportId, selectedOption) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    report.status = selectedOption;
-
-    // 토스트 알림 표시
-    toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
-      // 옵션을 필요에 따라 조정 가능
-      timeout: 3000,
-      closeOnClick: true,
-      pauseOnHover: true
-    });
-  }
+  // Emit event to parent to handle status update
+  emit("update-status", { reportId, newStatus: selectedOption });
 }
+
+// 상세 보기 토글
+function emitToggleDetails(reportId) {
+  emit("toggle-details", reportId);
+}
+
+// 상태 클래스 반환
+function statusClass(status) {
+  const classes = {
+    피싱: "text-danger fw-bold",
+    악성코드: "text-warning fw-bold",
+    캠페인: "text-info fw-bold",
+    오신고: "text-secondary fw-bold",
+  };
+  return classes[status] || "text-muted fw-bold"; // Default class if status is null
+}
+
+// 페이징 계산
+const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize));
+
+// 페이지 변경
+function changePage(page) {
+  if (page < 1 || page > totalPages.value) return;
+  emit("update:currentPage", page);
+}
+
+// Mobile Detection
+const isMobile = ref(window.innerWidth <= 576);
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth <= 576;
+});
 </script>
 
 <style scoped>
-/* 일반 스타일 */
-
 .detail-box {
-  background-color: #f8f9fa;
-  padding: 10px;
-  border-left: 5px solid #007bff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  font-size: 0.875rem;
+  border-left: 4px solid #0d6efd;
 }
 
-.detail-box table {
-  margin: 0;
+.table-hover tbody tr:hover {
+  background-color: #f1f1f1;
 }
 
-.table th,
-.table td {
-  font-size: 0.75rem;
-  white-space: normal;
-  word-wrap: break-word;
-  text-align: center;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* 수정 버튼 패딩 조정 */
-.edit-button {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-/* 상세 버튼 스타일 */
-.btn-icon {
-  background: none;
-  border: none;
-  color: #5e72e4;
-  font-size: 1rem;
-  padding: 0;
-}
-
-/* 파란색 그라데이션 아이콘 스타일 */
-.gradient-icon {
-  background: linear-gradient(90deg, #0072ff, #0090ff);
-  /* -webkit-background-clip: text; */
-  -webkit-text-fill-color: transparent;
-}
-
-/* 상세 버튼 스타일 */
-.detail-button {
-  background: none;
-  border: none;
+.pagination .page-link {
   cursor: pointer;
-  padding: 30%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.detail-button svg {
-  transition: transform 0.3s ease;
-  width: 16px;
-  height: 16px;
-  fill: #5e72e4; /* 원하는 색상으로 변경 가능 */
+.mobile-info-box {
+  padding: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin: 10px auto;
 }
 
-.detail-button:focus {
-  outline: none;
+.mobile-info-box div {
+  margin-bottom: 8px;
+  word-break: break-word; /* Prevent text overflow */
 }
 
-/* 상태 텍스트 스타일 */
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.font-weight-bold {
+.gradient-text {
+  background: linear-gradient(135deg, #6a11cb, #2575fc, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-weight: bold;
+  text-align: center;
 }
 
-/* 테이블 반응형 설정 */
-.table-responsive {
-  overflow-x: hidden;
-  overflow-y: hidden;
+.red-gradient-text {
+  background: linear-gradient(135deg, #ff0000, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  text-align: center;
 }
 
-/* 반응형 디자인 */
+.btn-sm {
+  padding: 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
 
-/* 화면 크기가 1200px 이하일 때 */
+/* 드롭다운 메뉴의 z-index 조정 */
+.dropdown-menu {
+  z-index: 1000;
+}
+
+/* Scoped CSS에서 드롭다운 화살표를 방해하지 않도록 조정 */
+.dropdown-toggle::after {
+  content: "";
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-left: 0.3em solid transparent;
+}
+
+/* 드롭다운 버튼의 위치 조정 */
+.btn-warning.dropdown-toggle,
+.btn-secondary.dropdown-toggle {
+  position: relative;
+}
+
+/* 추가 스타일: edit-column */
+.edit-column {
+  position: relative;
+}
+
+/* 드롭다운 메뉴 항목 스타일 */
+.dropdown-item {
+  cursor: pointer;
+}
+
+/* Responsive Column Classes */
 @media (max-width: 1200px) {
   .title-column {
     display: none;
   }
 }
 
-/* 화면 크기가 992px 이하일 때 */
 @media (max-width: 992px) {
   .sector-column {
     display: none;
   }
 }
 
-/* 화면 크기가 768px 이하일 때 */
 @media (max-width: 768px) {
   .company-column {
     display: none;
   }
 }
 
-/* 화면 크기가 576px 이하일 때 */
 @media (max-width: 576px) {
   .name-column {
     display: none;
   }
 
+  /* 첨부파일과 URL 열 숨기기 */
+  .attachment-column,
+  .url-column {
+    display: none;
+  }
+
+  .btn-sm {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.775rem;
+  }
+
+  /* 테이블 셀의 텍스트 크기 조정 */
   .table th,
   .table td {
-    font-size: 0.65rem;
+    padding: 8px;
+    font-size: 12px;
+    word-break: break-word; /* Prevent text overflow */
   }
 
-  .btn {
-    padding: 4px 8px;
-    font-size: 0.65rem;
-  }
-
-  .dropdown-menu {
+  /* 모바일 정보 박스 텍스트 크기 조정 */
+  .mobile-info-box {
     font-size: 0.75rem;
   }
 
-  /* 상세 버튼 열 항상 보이도록 설정 */
-  /* 선택자 구체성을 높여 우선순위 확보 */
-  .table-responsive .table .detail-button-column {
-    display: table-cell !important;
+  /* 날짜 셀에서 줄 바꿈 허용 (이미 위에서 정의) */
+}
+
+/* date-column 클래스: 모바일에서 줄 바꿈 허용 */
+.date-column {
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .date-column {
+    white-space: normal;
+    word-break: break-word;
   }
+}
+
+/* long-text 클래스: 긴 텍스트가 잘리지 않고 표시되도록 함 */
+.long-text {
+  max-width: 200px;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  word-break: break-word; /* Prevent text overflow */
+}
+
+/* 그라데이션 텍스트 스타일 */
+.gradient-text {
+  background: linear-gradient(135deg, #6a11cb, #2575fc, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  text-align: center;
+}
+
+.red-gradient-text {
+  background: linear-gradient(135deg, #ff0000, #ff6a00);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+
+.toggle-button {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+  padding: 0.25rem 0.4rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 0.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+.toggle-button:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.toggle-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.5);
 }
 </style>
