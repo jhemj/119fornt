@@ -1,3 +1,138 @@
+  <script setup>
+import { ref, computed, onMounted } from 'vue';
+import ArgonPagination from '../../components/ArgonPagination.vue';
+import { useToast } from 'vue-toastification';
+import axios from 'axios'; // Axios 임포트
+
+const toast = useToast(); // 토스트 인스턴스 생성
+
+// 모바일 여부 판단
+const isMobile = ref(window.innerWidth <= 576);
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth <= 576;
+});
+
+// 신고 데이터 상태
+const reports = ref([]);
+const currentPage = ref(1);
+const pageSize = 20;
+
+// 데이터 필터링 (피싱, 악성코드만 포함)
+const filteredReports = computed(() => {
+  return reports.value.filter((report) => ['피싱', '악성코드'].includes(report.status));
+});
+
+// 페이징 처리
+const paginatedReports = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  const end = start + pageSize;
+  return filteredReports.value.slice(start, end);
+});
+
+// 데이터 초기화 함수
+const fetchReports = async () => {
+  try {
+    const response = await axios.get('http://52.231.104.51/api/reports/?status__in=피싱,악성코드');
+    reports.value = response.data.map((report) => ({
+      id: report.id,
+      receivedDate: report.receivedDate,
+      status: report.status || '미분류',
+      details: {
+        sender: report.details?.sender || 'unknown@example.com',
+        subject: report.details?.subject || 'No Subject',
+        attachment: report.details?.attachment || 'None',
+        bodyUrl: report.details?.bodyUrl || '#',
+      },
+    }));
+  } catch (error) {
+    toast.error('데이터를 가져오는 중 오류가 발생했습니다.');
+    console.error(error);
+  }
+};
+
+// 페이지 변경 함수
+function updateCurrentPage(newPage) {
+  currentPage.value = newPage;
+}
+
+// 상태 수정 함수
+function handleEdit(reportId, selectedOption) {
+  const report = reports.value.find((r) => r.id === reportId);
+  if (report) {
+    try {
+      // API 요청: 상태 업데이트
+      axios.patch(`http://52.231.104.51/api/reports/${reportId}/update_status/`, {
+        status: selectedOption,
+      });
+ 
+      // 클라이언트 상태 업데이트
+      report.status = selectedOption;
+
+      // 성공 알림
+      toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
+        timeout: 3000,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    } catch (error) {
+      toast.error('수정 중 오류가 발생했습니다.');
+      console.error(error);
+    }
+  }
+}
+
+// 발신자 차단 함수
+function blockSender(reportId) {
+  const report = reports.value.find((r) => r.id === reportId);
+  if (report) {
+    try {
+      // API 요청: 발신자 차단
+      axios.post(`http://52.231.104.51/api/reports/block-sender`, {
+        sender: report.details.sender,
+      });
+
+      // 성공 알림
+      toast.success(`발신자 "${report.details.sender}"가 차단되었습니다.`, {
+        timeout: 3000,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    } catch (error) {
+      toast.error('발신자 차단 중 오류가 발생했습니다.');
+      console.error(error);
+    }
+  }
+}
+
+// URL 차단 함수
+function blockUrl(reportId) {
+  const report = reports.value.find((r) => r.id === reportId);
+  if (report) {
+    try {
+      // API 요청: URL 차단
+      axios.post(`http://52.231.104.51/api/reports/block-url`, {
+        url: report.details.bodyUrl,
+      });
+
+      // 성공 알림
+      toast.success(`URL "${report.details.bodyUrl}"가 차단되었습니다.`, {
+        timeout: 3000,
+        closeOnClick: true,
+        pauseOnHover: true,
+      });
+    } catch (error) {
+      toast.error('URL 차단 중 오류가 발생했습니다.');
+      console.error(error);
+    }
+  }
+}
+
+// 컴포넌트 마운트 시 데이터 로드
+onMounted(() => {
+  fetchReports();
+});
+</script>
+
 <template>
   <div class="card">
     <div class="card-header pb-0">
@@ -33,7 +168,6 @@
                 <td :class="['text-xs', { 'text-danger font-weight-bold': ['피싱', '악성코드'].includes(report.status) }]">
                   {{ report.status }}
                 </td>
-                <!-- 수정 드롭다운 -->
                 <td class="edit-column">
                   <button
                     class="btn btn-warning btn-sm edit-button dropdown-toggle"
@@ -51,7 +185,6 @@
                     <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
                   </ul>
                 </td>
-                <!-- 대응 드롭다운 -->
                 <td class="response-column">
                   <button
                     class="btn btn-secondary btn-sm response-button dropdown-toggle"
@@ -66,15 +199,6 @@
                     <li><a class="dropdown-item" href="#" @click.prevent="blockSender(report.id)">발신자 차단</a></li>
                     <li><a class="dropdown-item" href="#" @click.prevent="blockUrl(report.id)">URL 차단</a></li>
                   </ul>
-                </td>
-              </tr>
-              <!-- 모바일에서만 보이는 첨부파일 및 본문 URL 박스 -->
-              <tr v-show="isMobile" class="mobile-info-row">
-                <td colspan="9">
-                  <div class="mobile-info-box">
-                    <div><strong>첨부파일:</strong> {{ report.details.attachment }}</div>
-                    <div><strong>본문 URL:</strong> <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a></div>
-                  </div>
                 </td>
               </tr>
             </template>
@@ -94,109 +218,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue';
-import ArgonPagination from '../../components/ArgonPagination.vue';
-import { useToast } from 'vue-toastification'; // vue-toastification 임포트
-
-const toast = useToast(); // 토스트 인스턴스 생성
-
-// 모바일 여부 판단
-const isMobile = ref(window.innerWidth <= 576);
-window.addEventListener("resize", () => {
-  isMobile.value = window.innerWidth <= 576;
-});
-
-// 신고 데이터 설정
-const reports = ref(generateDummyData());
-const currentPage = ref(1);
-const pageSize = 20;
-const filteredReports = computed(() => {
-  return reports.value.filter(report => ['피싱', '악성코드'].includes(report.status));
-});
-const paginatedReports = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  const end = start + pageSize;
-  return filteredReports.value.slice(start, end);
-});
-
-// 더미 데이터 생성 함수
-function generateDummyData() {
-  const statuses = ['피싱', '악성코드', '캠페인', '오신고'];
-  const companies = ['KT', 'KT cs', 'KT Cloud'];
-  const sectors = ['기술혁신부문', '전략신사업부문', '대구경북광역본부', 'E부문'];
-  const titles = ['사원', '대리', '과장', '차장', '부장'];
-  const names = ['김철수', '이영희', '박지성', '최영미', '장민호', '윤소라', '서태지', '한가림', '주영훈', '남주리'];
-
-  return Array.from({ length: 100 }, (_, i) => ({
-    id: i + 1,
-    receivedDate: `20${String(Math.floor(Math.random() * 20 + 1)).padStart(2, '0')}-${String(Math.floor(Math.random() * 12 + 1)).padStart(2, '0')}-${String(Math.floor(Math.random() * 28 + 1)).padStart(2, '0')}`,
-    company: companies[Math.floor(Math.random() * companies.length)],
-    sector: sectors[Math.floor(Math.random() * sectors.length)],
-    title: titles[Math.floor(Math.random() * titles.length)],
-    name: names[Math.floor(Math.random() * names.length)],
-    email: `${names[Math.floor(Math.random() * names.length)].toLowerCase()}@${companies[Math.floor(Math.random() * companies.length)].toLowerCase()}.com`,
-    subject: '보안 위협 관련 문의',
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    details: {
-      sender: `${Math.random().toString(36).substring(7)}@example.com`,
-      subject: '보안 위협 관련 문의',
-      attachment: '문서.pdf',
-      bodyUrl: 'http://example.com'
-    },
-    showResponse: false
-  }));
-}
-
-function updateCurrentPage(newPage) {
-  currentPage.value = newPage;
-}
-
-function handleEdit(reportId, selectedOption) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    report.status = selectedOption;
-
-    // 토스트 알림 표시 (성공 메시지)
-    toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
-      timeout: 3000,
-      closeOnClick: true,
-      pauseOnHover: true
-    });
-  }
-}
-
-function blockSender(reportId) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    // 발신자 차단 로직 (예: 데이터베이스 업데이트 등)
-    // 여기서는 단순히 알림만 표시
-
-    // 토스트 알림 표시 (오류 메시지)
-    toast.error(`"${report.details.sender}" 가 차단되었습니다.`, {
-      timeout: 3000,
-      closeOnClick: true,
-      pauseOnHover: true
-    });
-  }
-}
-
-function blockUrl(reportId) {
-  const report = reports.value.find(r => r.id === reportId);
-  if (report) {
-    // URL 차단 로직 (예: 데이터베이스 업데이트 등)
-    // 여기서는 단순히 알림만 표시
-
-    // 토스트 알림 표시 (오류 메시지)
-    toast.error(`"${report.details.bodyUrl}" 가 차단되었습니다.`, {
-      timeout: 3000,
-      closeOnClick: true,
-      pauseOnHover: true
-    });
-  }
-}
-</script>
 
 <style scoped>
 /* 일반 스타일 */

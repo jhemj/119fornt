@@ -83,10 +83,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
+import axios from 'axios';
 
-// 토스트 알림 사용 설정
+// 토스트 알림 설정
 const toast = useToast();
 
 // 모바일 여부 판단
@@ -98,140 +99,92 @@ window.addEventListener('resize', () => {
 // 상태 옵션 배열
 const statusOptions = ['피싱', '악성코드', '캠페인', '오신고'];
 
-// 유틸리티 함수: 랜덤 날짜 생성
-const getRandomDate = () => {
-  const start = new Date(2022, 0, 1);
-  const end = new Date();
-  const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = String(date.getFullYear()).slice(-2);
-  return `${year}/${month}/${day}`;
-};
+// 신고 리스트 상태
+const reports = ref([]);
 
-// 유틸리티 함수: 랜덤 이메일 생성
-const getRandomEmail = (name) => {
-  const domains = ['example.com', 'mail.com', 'test.org', 'domain.net'];
-  const domain = domains[Math.floor(Math.random() * domains.length)];
-  return `${name.toLowerCase()}@${domain}`;
-};
-
-// 유틸리티 함수: 랜덤 URL 생성
-const getRandomUrl = () => {
-  const protocols = ['http', 'https'];
-  const domains = ['malicious-site.com', 'phishing.com', 'virus-download.com', 'fake-finance.com'];
-  const protocol = protocols[Math.floor(Math.random() * protocols.length)];
-  const domain = domains[Math.floor(Math.random() * domains.length)];
-  return `${protocol}://${domain}`;
-};
-
-// 유틸리티 함수: 랜덤 이름 생성
-const getRandomName = () => {
-  const firstNames = ['김민수', '이영희', '박지훈', '최수진', '정우성', '한지민', '오지은', '장동건', '수지', '이민호'];
-  return firstNames[Math.floor(Math.random() * firstNames.length)];
-};
-
-// 유틸리티 함수: 랜덤 회사 및 부문 생성
-const getRandomCompany = () => {
-  const companies = ['KT', '삼성', 'LG', '현대', '카카오', '네이버', 'SK', '롯데', '포스코', '한화'];
-  return companies[Math.floor(Math.random() * companies.length)];
-};
-
-const getRandomSector = () => {
-  const sectors = ['마케팅', '개발', '재무', '인사', '영업', '고객지원', '운영', '디자인', '기획', 'IT'];
-  return sectors[Math.floor(Math.random() * sectors.length)];
-};
-
-const getRandomTitle = () => {
-  const titles = ['사원', '대리', '과장', '차장', '부장', '이사', '상무', '전무', '대표', '팀장'];
-  return titles[Math.floor(Math.random() * titles.length)];
-};
-
-const getRandomAiAnalysis = () => {
-  const analyses = ['피싱', '악성코드', '캠페인', '오신고'];
-  return analyses[Math.floor(Math.random() * analyses.length)];
-};
-
-// 더미 데이터 생성 함수
-const generateRandomReports = (count) => {
-  const reports = [];
-  for (let i = 1; i <= count; i++) {
-    const name = getRandomName();
-    const company = getRandomCompany();
-    const sector = getRandomSector();
-    const title = getRandomTitle();
-    const aiAnalysis = getRandomAiAnalysis();
-    const subject = aiAnalysis === '피싱' ? '보안 위협 관련 문의' :
-                    aiAnalysis === '악성코드' ? '악성코드 발견 보고' :
-                    aiAnalysis === '캠페인' ? '마케팅 캠페인 제안' :
-                    '기타 신고';
-    const attachment = aiAnalysis === '악성코드' ? 'virus.exe' :
-                       aiAnalysis === '캠페인' ? 'campaign.pdf' :
-                       aiAnalysis === '피싱' ? '없음' : 'document.docx';
-    reports.push({
-      id: i,
-      receivedDate: getRandomDate(),
-      company: company,
-      sector: sector,
-      title: title,
-      name: name,
-      email: getRandomEmail(name),
-      subject: subject,
-      aiAnalysis: aiAnalysis,
-      status: null, // status 기본값을 null로 설정
-      details: {
-        sender: `${aiAnalysis.toLowerCase()}@example.com`,
-        subject: subject,
-        attachment: attachment,
-        bodyUrl: getRandomUrl(),
-      },
-    });
-  }
-  return reports;
-};
-
-// 더미 데이터 초기화
-const reports = ref(generateRandomReports(20));
-
-// 계산된 속성: status가 null인 데이터만 필터링
+// 필터링된 미분류 신고 리스트
 const filteredReports = computed(() => {
-  return reports.value.filter(report => report.status === null);
+  return reports.value.filter((report) => report.status === null);
 });
 
 // "저장" 버튼 클릭 시 호출되는 함수
-const handleSave = (id) => {
+const handleSave = async (id) => {
   const report = reports.value.find((r) => r.id === id);
   if (report) {
-    // `status` 변수에 `aiAnalysis` 값 저장
-    report.status = report.aiAnalysis;
-
-    // 알림 메시지를 동적으로 설정
-    toast.success(`${report.aiAnalysis}으로 저장되었습니다.`, {
-      timeout: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-    });
+    try {
+      // API 호출: 상태 업데이트
+      await axios.patch(`http://52.231.104.51/api/reports/update-status/${id}/`, {
+        status: report.aiAnalysis, // AI 분석 상태로 저장
+      });
+      report.status = report.aiAnalysis; // 상태 업데이트
+      toast.success(`${report.aiAnalysis}으로 저장되었습니다.`, {
+        timeout: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+      });
+    } catch (error) {
+      toast.error('저장 중 오류가 발생했습니다.');
+      console.error(error);
+    }
   }
 };
 
-// 수정 함수
-const handleEdit = (id, selectedOption) => {
+// "수정" 버튼 클릭 시 호출되는 함수
+const handleEdit = async (id, selectedOption) => {
   const report = reports.value.find((r) => r.id === id);
   if (report) {
-
-    // `status` 변수에도 수정된 값 저장
-    report.status = selectedOption;
-
-    // 알림 메시지 표시
-    toast.success(`${selectedOption}으로 수정, 저장되었습니다.`, {
-      timeout: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-    });
+    try {
+      // API 호출: 상태 업데이트
+      await axios.patch(`http://52.231.104.51/api/reports/update-status/${id}/`, {
+        status: selectedOption,
+      });
+      report.status = selectedOption; // 상태 업데이트
+      toast.success(`${selectedOption}으로 수정, 저장되었습니다.`, {
+        timeout: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+      });
+    } catch (error) {
+      toast.error('수정 중 오류가 발생했습니다.');
+      console.error(error);
+    }
   }
 };
+
+// 백엔드에서 데이터 가져오기
+const fetchReports = async () => {
+  try {
+    const response = await axios.get('http://52.231.104.51/api/reports/?status__isnull=true');
+    console.log(response);
+    reports.value = response.data.map((report) => ({
+      id: report.id,
+      receivedDate: report.receivedDate,
+      company: report.company || 'Unknown',
+      sector: report.sector || 'Unknown',
+      title: report.title || 'Unknown',
+      name: report.name || 'Unknown',
+      email: report.email || 'unknown@example.com',
+      subject: report.subject || 'No Subject',
+      aiAnalysis: report.ai_classification || 'Unknown',
+      status: report.status || null,
+      details: {
+        sender: report.details?.sender || 'unknown@example.com',
+        subject: report.details?.subject || 'No Details',
+        attachment: report.details?.attachment || 'None',
+        bodyUrl: report.details?.bodyUrl || '#',
+      },
+    }));
+  } catch (error) {
+    toast.error('데이터를 가져오는 중 오류가 발생했습니다.');
+    console.error(error);
+  }
+};
+
+// 컴포넌트가 마운트될 때 데이터 로드
+onMounted(() => {
+  fetchReports();
+});
 </script>
-
 <style scoped>
 .table th,
 .table td {

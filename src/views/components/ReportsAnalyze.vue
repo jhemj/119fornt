@@ -11,7 +11,7 @@
       <div class="col-md-6 mb-3">
         <div class="chart-container">
           <h6>부문별 신고 현황</h6>
-          <canvas ref="sectorChart"></canvas>
+          <canvas ref="companyChart"></canvas>
         </div>
       </div>
     </div>
@@ -40,9 +40,9 @@ const props = defineProps({
 });
 
 const statusChart = ref(null);
-const sectorChart = ref(null);
+const companyChart = ref(null);
 let statusChartInstance = null;
-let sectorChartInstance = null;
+let companyChartInstance = null;
 
 // 동적 색상 생성 유틸리티 (부문별 신고 현황에 사용)
 function generateColors(count) {
@@ -70,6 +70,7 @@ function prepareStatusData() {
     acc[status] = (acc[status] || 0) + 1;
     return acc;
   }, {});
+  
 
   const labels = Object.keys(statusCounts);
   const data = Object.values(statusCounts);
@@ -88,14 +89,19 @@ function prepareStatusData() {
 }
 
 // 부문별 신고 데이터 준비 (동적 색상 사용)
-function prepareSectorData() {
-  const sectorCounts = props.reports.reduce((acc, report) => {
-    acc[report.sector] = (acc[report.sector] || 0) + 1;
+function preparecompanyData() {
+  const companyCounts = props.reports.reduce((acc, report) => {
+    const company = report.company;
+
+    // 'unknown' 상태는 제외
+    if (company && company.toLowerCase() !== 'unknown') {
+      acc[company] = (acc[company] || 0) + 1;
+    }
     return acc;
   }, {});
 
-  const labels = Object.keys(sectorCounts);
-  const data = Object.values(sectorCounts);
+  const labels = Object.keys(companyCounts);
+  const data = Object.values(companyCounts);
   const backgroundColors = generateColors(labels.length);
 
   return {
@@ -113,7 +119,7 @@ function prepareSectorData() {
 // 그래프 초기화 함수
 function initCharts() {
   if (statusChartInstance) statusChartInstance.destroy();
-  if (sectorChartInstance) sectorChartInstance.destroy();
+  if (companyChartInstance) companyChartInstance.destroy();
 
   // 상태별 신고 현황 그래프 (고정 색상)
   statusChartInstance = new Chart(statusChart.value, {
@@ -143,9 +149,9 @@ function initCharts() {
   });
 
   // 부문별 신고 현황 그래프 (동적 색상)
-  sectorChartInstance = new Chart(sectorChart.value, {
+  companyChartInstance = new Chart(companyChart.value, {
     type: "bar",
-    data: prepareSectorData(),
+    data: preparecompanyData(),
     options: {
       responsive: true,
       plugins: {

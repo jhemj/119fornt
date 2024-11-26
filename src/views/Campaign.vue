@@ -46,7 +46,7 @@ const chartData = reactive({
                 id="chart-line"
                 title="분기별 캠페인 참여율"
                 description="<i class='fa fa-arrow-up text-success'></i>
-          <span class='font-weight-bold'>10% 증가</span> 하였습니다."         
+          <span class='font-weight-bold'>10% 증가</span> 하였습니다."
                 :chart="chartData"
               />
             </div>
