@@ -60,10 +60,10 @@ function handleEdit(reportId, selectedOption) {
   const report = reports.value.find((r) => r.id === reportId);
   if (report) {
     try {
-      // API 요청: 상태 업데이트
-      axios.patch(`http://52.231.104.51/api/reports/${reportId}/update_status/`, {
-        status: selectedOption,
-      });
+      // // API 요청: 상태 업데이트
+      // axios.patch(`http://52.231.104.51/api/reports/${reportId}/update_status/`, {
+      //   status: selectedOption,
+      // });
  
       // 클라이언트 상태 업데이트
       report.status = selectedOption;
@@ -87,9 +87,9 @@ function blockSender(reportId) {
   if (report) {
     try {
       // API 요청: 발신자 차단
-      axios.post(`http://52.231.104.51/api/reports/block-sender`, {
-        sender: report.details.sender,
-      });
+      // axios.post(`http://52.231.104.51/api/reports/block-sender`, {
+      //   sender: report.details.sender,
+      // });
 
       // 성공 알림
       toast.success(`발신자 "${report.details.sender}"가 차단되었습니다.`, {

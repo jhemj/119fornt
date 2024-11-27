@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { onMounted, watch, ref, nextTick } from "vue";
+import { onMounted, watch, ref } from "vue";
 import { Chart, registerables } from "chart.js";
 
 Chart.register(...registerables);
