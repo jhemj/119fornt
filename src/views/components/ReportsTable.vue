@@ -363,9 +363,9 @@ window.addEventListener("resize", () => {
 
 
 .toggle-button {
-  background-color: #0d6efd;
-  border-color: #0d6efd;
-  color: white;
+  background-color: $info;
+  border-color: $info;
+  color: $white;
   padding: 0.25rem 0.4rem;
   font-size: 1rem;
   line-height: 1;
@@ -373,12 +373,13 @@ window.addEventListener("resize", () => {
   cursor: pointer;
   transition: background-color 0.3s, border-color 0.3s;
 }
+
 .toggle-button:hover {
-  background-color: #0b5ed7;
-  border-color: #0a58ca;
+  background-color: darken($info, 10%);
+  border-color: darken($info, 15%);
 }
 
 .toggle-button:focus {
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba($info, 0.5);
 }
 </style>

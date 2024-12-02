@@ -14,6 +14,7 @@ const getRoute = () => {
 <template>
   <div class="collapse navbar-collapse w-auto h-auto h-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
+      <!-- 대시보드 -->
       <li class="nav-item">
         <sidenav-item
           to="/dashboard-default"
@@ -21,11 +22,13 @@ const getRoute = () => {
           navText="대시보드"
         >
           <template v-slot:icon>
-            <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+            <!-- 아이콘: ni ni-chart-bar-32 -->
+            <i class="ni ni-chart-bar-32 text-primary text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
+      <!-- 미분류 -->
       <li class="nav-item">
         <sidenav-item
           to="/tables"
@@ -33,11 +36,13 @@ const getRoute = () => {
           navText="미분류"
         >
           <template v-slot:icon>
-            <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
+            <!-- 아이콘: ni ni-folder-17 -->
+            <i class="ni ni-folder-17 text-warning text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
+      <!-- 전체보기 -->
       <li class="nav-item">
         <sidenav-item
           to="/reports"
@@ -45,11 +50,13 @@ const getRoute = () => {
           navText="전체보기"
         >
           <template v-slot:icon>
-            <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
+            <!-- 아이콘: ni ni-archive-2 -->
+            <i class="ni ni-archive-2 text-info text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
+      <!-- 캠페인 현황 -->
       <li class="nav-item">
         <sidenav-item
           to="/campaign"
@@ -57,11 +64,13 @@ const getRoute = () => {
           navText="캠페인 현황"
         >
           <template v-slot:icon>
-            <i class="ni ni-app text-info text-sm opacity-10"></i>
+            <!-- 아이콘: ni ni-trophy -->
+            <i class="ni ni-trophy text-success text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
+      <!-- 보안 위협 -->
       <li class="nav-item">
         <sidenav-item
           to="/threats"
@@ -69,17 +78,20 @@ const getRoute = () => {
           navText="보안 위협"
         >
           <template v-slot:icon>
-            <i class="ni ni-world-2 text-danger text-sm opacity-10"></i>
+            <!-- 아이콘: ni ni-lock-circle-open -->
+            <i class="ni ni-lock-circle-open text-danger text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
 
+      <!-- 구분선 및 프로필 -->
       <li class="mt-3 nav-item">
         <h6 class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6">
           ACCOUNT PAGES
         </h6>
       </li>
 
+      <!-- Profile -->
       <li class="nav-item">
         <sidenav-item
           to="/profile"
@@ -87,14 +99,15 @@ const getRoute = () => {
           navText="Profile"
         >
           <template v-slot:icon>
+            <!-- 아이콘: ni ni-single-02 -->
             <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
-
     </ul>
   </div>
 
+  <!-- 사이드바 하단 카드 -->
   <div class="pt-3 mx-3 mt-3 sidenav-footer">
     <sidenav-card
       :card="{

@@ -115,7 +115,7 @@ const fetchDashboardData = async () => {
     categories.value = [
       {
         icon: {
-          component: 'ni ni-mobile-button',
+          component: 'ni ni-email-83',
           background: 'danger',
         },
         label: '피싱',
@@ -123,25 +123,25 @@ const fetchDashboardData = async () => {
       },
       {
         icon: {
-          component: 'ni ni-tag',
+          component: 'ni ni-key-25',
           background: 'danger',
         },
         label: '악성코드',
         description: `<strong>${classifiedReports.value.악성코드}</strong>`,
       },
       {
-        icon: { component: 'ni ni-box-2', background: 'dark' },
+        icon: { component: 'ni ni-check-bold', background: 'dark' },
         label: '오신고',
         description: `<strong>${classifiedReports.value.오신고}</strong>`,
       },
       {
-        icon: { component: 'ni ni-satisfied', background: 'dark' },
+        icon: { component: 'ni ni-trophy', background: 'dark' },
         label: '캠페인',
         description: `<strong>${classifiedReports.value.캠페인}</strong>`,
       },
       {
         icon: {
-          component: 'ni ni-mobile-button',
+          component: 'ni ni-collection',
           background: 'dark',
         },
         label: '기타',
@@ -159,6 +159,7 @@ onMounted(() => {
 });
 </script>
 
+
 <template>
   <div class="py-4 container-fluid">
     <div class="row">
@@ -172,8 +173,8 @@ onMounted(() => {
               :value="`${dashboardStats.yesterdayReports}건`"
               description="<span class='text-sm font-weight-bolder text-success'>+55%</span> since yesterday"
               :icon="{
-                component: 'ni ni-money-coins',
-                background: 'bg-gradient-primary',
+                component: 'ni ni-bell-55',
+                background: 'bg-gradient-primary', // primary 색상 유지
                 shape: 'rounded-circle',
               }"
             />
@@ -185,8 +186,8 @@ onMounted(() => {
               :value="`${dashboardStats.unclassifiedReports}건`"
               description="<span class='text-sm font-weight-bolder text-success'>+3%</span> since last week"
               :icon="{
-                component: 'ni ni-world',
-                background: 'bg-gradient-dark',
+                component: 'ni ni-folder-17',
+                background: 'bg-gradient-warning', // warning 색상으로 변경
                 shape: 'rounded-circle',
               }"
               @click="navigateTo('/tables')"
@@ -200,8 +201,8 @@ onMounted(() => {
               :value="`${dashboardStats.securityThreats}`"
               description="<span class='text-sm font-weight-bolder text-danger'>-2</span> since last month"
               :icon="{
-                component: 'ni ni-paper-diploma',
-                background: 'bg-gradient-danger',
+                component: 'ni ni-lock-circle-open',
+                background: 'bg-gradient-danger', // danger 색상 유지
                 shape: 'rounded-circle',
               }"
               @click="navigateTo('/threats')"
@@ -215,8 +216,8 @@ onMounted(() => {
               :value="`${dashboardStats.cumulativeReports}`"
               description="<span class='text-sm font-weight-bolder text-success'>+430</span> than last month"
               :icon="{
-                component: 'ni ni-cart',
-                background: 'bg-gradient-success',
+                component: 'ni ni-archive-2',
+                background: 'bg-gradient-info', // info 색상으로 변경
                 shape: 'rounded-circle',
               }"
               @click="navigateTo('/reports')"
@@ -249,6 +250,7 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
 
 
 
