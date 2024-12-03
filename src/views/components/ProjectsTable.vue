@@ -1,6 +1,12 @@
+<!-- ProjectsTable.vue -->
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useToast } from 'vue-toastification';
+
+// 토스트 알림 설정
+const toast = useToast();
 
 // 각 분류별 카운트 변수
 const phishingCount = ref(0);
@@ -13,34 +19,24 @@ const totalCount = ref(0);
 // 데이터 초기화 함수
 const fetchReportData = async () => {
   try {
-    const response = await axios.get('http://52.231.104.51/api/reports/?status__isnull=true');
-    const data = response.data;
+    // 두 개의 API 요청을 병렬로 수행
+    const [totalResponse, perClassificationResponse] = await Promise.all([
+    axios.get('http://52.231.104.51/api/reports/unclassified-ai-count/'),
+    axios.get('http://52.231.104.51/api/reports/unclassified-ai-count-per-classification/')
+  ]);
+
+    // 총 건수 업데이트
+    totalCount.value = totalResponse.data.unclassified_ai_classifications_count;
 
     // 분류별 카운트 초기화
-    phishingCount.value = 0;
-    malwareCount.value = 0;
-    campaignCount.value = 0;
-    falseReportCount.value = 0;
-    spamCount.value = 0;
-
-    // 데이터를 순회하면서 카운트 계산
-    data.forEach((item) => {
-      if (item.ai_classification === '피싱') phishingCount.value += 1;
-      else if (item.ai_classification === '악성코드') malwareCount.value += 1;
-      else if (item.ai_classification === '캠페인') campaignCount.value += 1;
-      else if (item.ai_classification === '오신고') falseReportCount.value += 1;
-      else if (item.ai_classification === '스팸') spamCount.value += 1;
-    });
-
-    // 총 건수 계산
-    totalCount.value =
-      phishingCount.value +
-      malwareCount.value +
-      campaignCount.value +
-      falseReportCount.value + 
-      spamCount.value;
+    phishingCount.value = perClassificationResponse.data['피싱'] || 0;
+    malwareCount.value = perClassificationResponse.data['악성코드'] || 0;
+    campaignCount.value = perClassificationResponse.data['캠페인'] || 0;
+    falseReportCount.value = perClassificationResponse.data['오신고'] || 0;
+    spamCount.value = perClassificationResponse.data['스팸'] || 0;
   } catch (error) {
     console.error('데이터를 가져오는 중 오류가 발생했습니다:', error);
+    toast.error('데이터를 가져오는 중 오류가 발생했습니다.');
   }
 };
 
@@ -173,7 +169,7 @@ onMounted(() => {
                     {{ ((spamCount / totalCount) * 100).toFixed(2) }}%
                   </span>
                   <div class="progress w-100">
-                    <div d
+                    <div
                       class="progress-bar bg-gradient-success"
                       role="progressbar"
                       :aria-valuenow="(spamCount / totalCount) * 100"
@@ -213,15 +209,18 @@ onMounted(() => {
 }
 
 /* Adjusted column widths */
-.classification-header, .classification-cell {
+.classification-header,
+.classification-cell {
   width: 15%;
 }
 
-.count-header, .count-cell {
+.count-header,
+.count-cell {
   width: 15%;
 }
 
-.percentage-header, .percentage-cell {
+.percentage-header,
+.percentage-cell {
   width: 70%;
 }
 

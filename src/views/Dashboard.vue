@@ -81,27 +81,27 @@ const categories = ref([]);
 const fetchDashboardData = async () => {
   try {
     // 1. 신고 건수 확인 API (어제의 신고 건수)
-    const reportsYesterdayResponse = await axios.get('http://52.231.104.51/api/reports/stats/reports-yesterday/');
+    const reportsYesterdayResponse = await axios.get('http://52.231.104.51/api/reports/report-count-yesterday/');
     dashboardStats.yesterdayReports = reportsYesterdayResponse.data.yesterday;
 
     // 2. 미분류 신고 확인 API
-    const unclassifiedResponse = await axios.get('http://52.231.104.51/api/reports/stats/unclassified-reports/');
+    const unclassifiedResponse = await axios.get('http://52.231.104.51/api/reports/unclassified-report-count/');
     dashboardStats.unclassifiedReports = unclassifiedResponse.data.unclassified_reports;
 
     // 3. 이달의 보안 위협 확인 API
-    const securityThreatResponse = await axios.get('http://52.231.104.51/api/reports/stats/security-threat/');
+    const securityThreatResponse = await axios.get('http://52.231.104.51/api/reports/security-threat-current-previous-month/');
     dashboardStats.securityThreats = securityThreatResponse.data.current_month;
 
     // 4. 누적 신고 확인 API
-    const cumulativeResponse = await axios.get('http://52.231.104.51/api/reports/stats/cumulative-reports/');
+    const cumulativeResponse = await axios.get('http://52.231.104.51/api/reports/cumulative-report-count/');
     dashboardStats.cumulativeReports = cumulativeResponse.data.current_month_reports;
 
     // 5. 분류 완료된 신고 유형 API
-    const classifiedReportsResponse = await axios.get('http://52.231.104.51/api/reports/stats/classified-report-types/');
+    const classifiedReportsResponse = await axios.get('http://52.231.104.51/api/reports/classified-report-types-count/');
     classifiedReports.value = classifiedReportsResponse.data;
 
     // 6. 최근 12개월 월별 신고 유형 API
-    const monthlyReportResponse = await axios.get('http://52.231.104.51/api/reports/stats/monthly-report-types/');
+    const monthlyReportResponse = await axios.get('http://52.231.104.51/api/reports/monthly-report-types-last-12-months/');
     monthlyReportData.value = monthlyReportResponse.data;
 
     // 차트 데이터 업데이트
@@ -110,7 +110,7 @@ const fetchDashboardData = async () => {
     chartData.datasets[1].data = monthlyReportData.value.map((data) => data.피싱);
     chartData.datasets[2].data = monthlyReportData.value.map((data) => data.악성코드);
     chartData.datasets[3].data = monthlyReportData.value.map((data) => data.캠페인);
-    console.log("chartdata >> ", chartData);
+
     // 카테고리 리스트 업데이트
     categories.value = [
       {

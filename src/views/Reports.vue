@@ -14,7 +14,6 @@
                 id="start-date"
                 class="form-control"
                 v-model="filterPeriod.start"
-                @change="currentPage = 1"
               />
             </div>
             <div class="flex-grow-1">
@@ -24,11 +23,21 @@
                 id="end-date"
                 class="form-control"
                 v-model="filterPeriod.end"
-                @change="currentPage = 1"
+              />
+            </div>
+            <!-- 검색 키워드 입력 -->
+            <div class="flex-grow-1">
+              <label for="search-keywords" class="form-label">검색 키워드 (다중 키워드는 space로 구분)</label>
+              <input
+                type="text"
+                id="search-keywords"
+                class="form-control"
+                v-model="searchKeywords"
+                placeholder="예: 피싱 긴급"
               />
             </div>
             <div class="mt-4">
-              <button class="btn btn-primary me-2" @click="currentPage = 1">
+              <button class="btn btn-primary me-2" @click="applyFilters">
                 필터 적용
               </button>
               <button class="btn btn-secondary" @click="resetFilters">
@@ -43,14 +52,19 @@
     <!-- 분석 및 테이블 컴포넌트 -->
     <div class="row">
       <div class="col-12">
-        <reports-analyze :reports="filteredReports" />
+        <reports-analyze 
+          :reports="reports" 
+          :status-aggregations="statusAggregations"
+          :company-aggregations="companyAggregations"
+        />
       </div>
       <div class="col-12 mt-4">
         <reports-table
-          :reports="paginatedReports"
+          :reports="reports"
           :current-page="currentPage"
           :page-size="pageSize"
-          :total-items="filteredReports.length"
+          :total-items="totalItems"
+          :total-pages="totalPages"
           @toggle-details="toggleDetails"
           @update-status="handleUpdateStatus"
           @update:currentPage="updateCurrentPage"
@@ -61,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import ReportsTable from "./components/ReportsTable.vue";
 import ReportsAnalyze from "./components/ReportsAnalyze.vue";
 
@@ -71,145 +85,188 @@ const toast = useToast();
 
 // 데이터 상태
 const reports = ref([]);
+const totalItems = ref(0);
+
+// 집계 데이터 상태
+const statusAggregations = ref([]);
+const companyAggregations = ref([]);
 
 // 필터 상태
 const filterPeriod = ref({ start: "", end: "" });
+const searchKeywords = ref("");
 
 // 페이징 상태
 const currentPage = ref(1);
-const pageSize = 20;
+const pageSize = ref(20); // reactive로 변경하여 필요 시 동적으로 변경 가능
+const totalPages = ref(1);
 
-// 데이터 초기화
-// function initializeReports() {
-//   reports.value = generateDummyData();
-// }
-
+// Axios 가져오기
 import axios from "axios";
 
-// 데이터 초기화
-async function initializeReports() {
-  const response = await axios.get("http://52.231.104.51/api/reports/"); // 실제 API URL로 변경
-  console.log(response.data.map((report, index) => ({id: index+100, company:report.company})));
-    
+// 데이터 가져오기 함수
+async function fetchReports() {
   try {
-    const response = await axios.get("http://52.231.104.51/api/reports/"); // 실제 API URL로 변경
-    console.log(response.data.map((report, index) => ({id: index+100, company:report.company})));
-    reports.value = response.data.map((report, index) => ({
-      id: index + 1, // API에서 ID가 제공되면 그대로 사용
+    const params = {
+      page: currentPage.value,
+      page_size: pageSize.value,
+    };
+
+    // 날짜 필터 추가
+    if (filterPeriod.value.start) {
+      params['receivedDate__gte'] = filterPeriod.value.start;
+    }
+    if (filterPeriod.value.end) {
+      params['receivedDate__lte'] = filterPeriod.value.end;
+    }
+
+    // 검색 키워드 추가
+    if (searchKeywords.value.trim()) {
+      params.search = searchKeywords.value;
+    }
+
+    const response = await axios.get("http://52.231.104.51/api/reports/", {
+      params,
+    });
+
+    // 응답 데이터가 페이지네이션된 객체라고 가정
+    const data = response.data;
+    reports.value = data.results.map((report) => ({
+      id: report.id,
       receivedDate: report.receivedDate || randomDate(),
       company: report.company || "Unknown",
       sector: report.sector || "Unknown",
-      title: report.title || "Unknown",
+      title: report.subject || "Unknown",
       name: report.name || "Unknown",
       email: report.email || "unknown@example.com",
       subject: report.subject || "문의 제목 없음",
       status: report.status || "Unknown",
-      details: report.details || {
+      details: {
         sender: report.sender_email || "unknown@example.com",
         subject: report.subject || "세부 주제 관련 없음",
-        attachment: report.body_attachment || "없음",
-        bodyUrl: report.body_url || "없음",
+        attachments:
+          report.attachments && report.attachments.length > 0
+            ? report.attachments.map((att) => att.filename).join(", ")
+            : "없음",
+        bodyUrls:
+          report.urls && report.urls.length > 0
+            ? report.urls.map((url) => url.url).join(", ")
+            : "없음",
       },
       showDetails: false, // 상세보기 초기화
     }));
+
+    totalItems.value = data.count || 0; // 전체 아이템 수 설정
+    totalPages.value = Math.ceil(totalItems.value / pageSize.value);
   } catch (error) {
-    console.error("Failed to fetch reports:", error);
+    console.error(
+      "Failed to fetch reports:",
+      error.response ? error.response.data : error.message
+    );
     toast.error("데이터를 불러오는 데 실패했습니다.");
   }
 }
 
-// 더미 데이터 생성
-// function generateDummyData() {
-//   const statuses = ["피싱", "악성코드", "캠페인", "오신고"];
-//   const companies = ["KT", "KT CS", "KT Cloud"];
-//   const sectors = ["기술혁신부문", "전략신사업부문", "대구경북광역본부", "E부문"];
-//   const titles = ["사원", "대리", "과장", "차장", "부장"];
-//   const names = ["김철수", "이영희", "박지성", "최영미", "장민호", "윤소라"];
+// 상태별 집계 데이터 가져오기 함수
+async function fetchStatusAggregations() {
+  try {
+    const params = {
+      page: currentPage.value,
+      page_size: pageSize.value,
+    };
 
-//   return Array.from({ length: 100 }, (_, i) => ({
-//     id: i + 1,
-//     receivedDate: randomDate(), // 'YYYY-MM-DD' 형식
-//     company: randomItem(companies),
-//     sector: randomItem(sectors),
-//     title: randomItem(titles),
-//     name: randomItem(names),
-//     email: `${randomItem(names).toLowerCase().replace(" ", "")}@${randomItem(companies).toLowerCase().replace(" ", "")}.com`,
-//     subject: "보안 위협 관련 문의",
-//     status: randomItem(statuses),
-//     details: {
-//       sender: `${Math.random().toString(36).substring(7)}@example.com`,
-//       subject: "세부 주제 관련 문의",
-//       attachment: "문서.pdf",
-//       bodyUrl: "http://example.com",
-//     },
-//     showDetails: false, // 상세보기 초기화
-//   }));
-// }
+    // 날짜 필터 추가
+    if (filterPeriod.value.start) {
+      params['receivedDate__gte'] = filterPeriod.value.start;
+    }
+    if (filterPeriod.value.end) {
+      params['receivedDate__lte'] = filterPeriod.value.end;
+    }
 
-// function randomItem(array) {
-//   return array[Math.floor(Math.random() * array.length)];
-// }
+    // 검색 키워드 추가
+    if (searchKeywords.value.trim()) {
+      params.search = searchKeywords.value;
+    }
 
-function randomDate() {
-  const year = 2000 + Math.floor(Math.random() * 24);
-  const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, "0");
-  const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
-  return `${year}-${month}-${day}`; // 'YYYY-MM-DD' 형식
+    const response = await axios.get("http://52.231.104.51/api/reports/report-status-aggregation", {
+      params,
+    });
+
+    statusAggregations.value = response.data;
+  } catch (error) {
+    console.error(
+      "Failed to fetch status aggregations:",
+      error.response ? error.response.data : error.message
+    );
+    toast.error("상태별 집계 데이터를 불러오는 데 실패했습니다.");
+  }
 }
 
-// async function applyFilters() {
-//   const { start, end } = filterPeriod.value;
-//   if (start && end) {
-//     try {
-//       const response = await axios.get("http://52.231.104.51/api/reports", {
-//         params: { startDate: start, endDate: end },
-//       });
-//       reports.value = response.data;
-//       currentPage.value = 1;
-//     } catch (error) {
-//       console.error("Failed to apply filters:", error);
-//       toast.error("필터링에 실패했습니다.");
-//     }
-//   } else {
-//     toast.warning("필터 기간을 선택하세요.");
-//   }
-// }
+// 회사별 집계 데이터 가져오기 함수
+async function fetchCompanyAggregations() {
+  try {
+    const params = {
+      page: currentPage.value,
+      page_size: pageSize.value,
+    };
 
-// 필터 적용을 위한 계산된 속성
-const filteredReports = computed(() => {
-  const { start, end } = filterPeriod.value;
-  if (start && end) {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    if (startDate > endDate) {
-      toast.error("시작 날짜가 종료 날짜보다 이후일 수 없습니다.");
-      return reports.value; // 필터 적용 안 함
+    // 날짜 필터 추가
+    if (filterPeriod.value.start) {
+      params['receivedDate__gte'] = filterPeriod.value.start;
     }
-    return reports.value.filter((report) => {
-      const reportDate = new Date(report.receivedDate);
-      return reportDate >= startDate && reportDate <= endDate;
-    });
-  } else {
-    return reports.value;
-  }
-});
+    if (filterPeriod.value.end) {
+      params['receivedDate__lte'] = filterPeriod.value.end;
+    }
 
-// 필터 리셋
+    // 검색 키워드 추가
+    if (searchKeywords.value.trim()) {
+      params.search = searchKeywords.value;
+    }
+
+    const response = await axios.get("http://52.231.104.51/api/reports/report-company-aggregation", {
+      params,
+    });
+
+    companyAggregations.value = response.data;
+  } catch (error) {
+    console.error(
+      "Failed to fetch company aggregations:",
+      error.response ? error.response.data : error.message
+    );
+    toast.error("회사별 집계 데이터를 불러오는 데 실패했습니다.");
+  }
+}
+
+// 전체 집계 데이터 가져오기 함수
+async function fetchAggregations() {
+  await Promise.all([
+    fetchStatusAggregations(),
+    fetchCompanyAggregations(),
+  ]);
+}
+
+// 필터 적용 함수
+function applyFilters() {
+  currentPage.value = 1;
+  fetchReports();
+  fetchAggregations(); // 필터 변경 시 집계 데이터도 갱신
+}
+
+// 필터 리셋 함수
 function resetFilters() {
   filterPeriod.value = { start: "", end: "" };
+  searchKeywords.value = "";
   currentPage.value = 1;
+  fetchReports();
+  fetchAggregations();
 }
 
-// 페이징 계산
-const paginatedReports = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  const end = start + pageSize;
-  return filteredReports.value.slice(start, end);
-});
-
-// 페이지 업데이트
+// 페이지 업데이트 함수
 function updateCurrentPage(newPage) {
-  currentPage.value = newPage;
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    currentPage.value = newPage;
+    fetchReports();
+    fetchAggregations(); // 페이지 변경 시 집계 데이터도 갱신
+  }
 }
 
 // 상세 보기 토글
@@ -220,11 +277,15 @@ function toggleDetails(reportId) {
   }
 }
 
+// 상태 업데이트 처리
 async function handleUpdateStatus({ reportId, newStatus }) {
   try {
-    const response = await axios.patch(`http://52.231.104.51/api/reports/${reportId}`, {
-      status: newStatus,
-    });
+    const response = await axios.patch(
+      `http://52.231.104.51/api/reports/${reportId}/`,
+      {
+        status: newStatus,
+      }
+    );
     const report = reports.value.find((r) => r.id === reportId);
     if (report) {
       report.status = response.data.status || newStatus;
@@ -234,28 +295,26 @@ async function handleUpdateStatus({ reportId, newStatus }) {
         pauseOnHover: true,
       });
     }
+    // 집계 데이터도 업데이트 필요 시 fetchAggregations() 호출
+    fetchAggregations();
   } catch (error) {
     console.error("Failed to update status:", error);
     toast.error("상태 업데이트에 실패했습니다.");
   }
 }
 
-// 상태 업데이트 처리
-// function handleUpdateStatus({ reportId, newStatus }) {
-//   const report = reports.value.find((r) => r.id === reportId);
-//   if (report) {
-//     report.status = newStatus;
-//     toast.success(`상태가 "${newStatus}"(으)로 수정되었습니다.`, {
-//       timeout: 3000,
-//       closeOnClick: true,
-//       pauseOnHover: true,
-//     });
-//   }
-// }
+// 랜덤 날짜 생성 (더미 데이터용)
+function randomDate() {
+  const year = 2000 + Math.floor(Math.random() * 24);
+  const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, "0");
+  const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+  return `${year}-${month}-${day}`; // 'YYYY-MM-DD' 형식
+}
 
 // 초기화 호출
 onMounted(() => {
-  initializeReports();
+  fetchReports();
+  fetchAggregations(); // 컴포넌트 마운트 시 집계 데이터도 초기 로드
 });
 </script>
 

@@ -1,3 +1,5 @@
+<!-- AuthorsTable.vue -->
+
 <template>
   <div class="card">
     <div class="card-header pb-0">
@@ -24,7 +26,7 @@
             </tr>
           </thead>
           <tbody>
-            <template v-for="report in filteredReports" :key="report.id">
+            <template v-for="report in reports" :key="report.id">
               <tr>
                 <td class="align-middle text-sm">{{ report.id }}</td>
                 <td class="align-middle text-sm">{{ report.receivedDate }}</td>
@@ -78,12 +80,35 @@
           </tbody>
         </table>
       </div>
+      <!-- 페이지네이션 컨트롤 추가 -->
+      <nav aria-label="Page navigation example" class="mt-3">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" :class="{ disabled: !pagination.previous }">
+            <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li
+            class="page-item"
+            v-for="page in totalPages"
+            :key="page"
+            :class="{ active: page === currentPage }"
+          >
+            <a class="page-link" href="#" @click.prevent="goToPage(page)">{{ page }}</a>
+          </li>
+          <li class="page-item" :class="{ disabled: !pagination.next }">
+            <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'; // Removed 'computed' from imports
 import { useToast } from 'vue-toastification';
 import axios from 'axios';
 
@@ -102,9 +127,13 @@ const statusOptions = ['피싱', '악성코드', '캠페인', '오신고'];
 // 신고 리스트 상태
 const reports = ref([]);
 
-// 필터링된 미분류 신고 리스트
-const filteredReports = computed(() => {
-  return reports.value.filter((report) => report.status === null);
+// 페이지네이션 상태
+const currentPage = ref(1);
+const totalPages = ref(1);
+const pagination = ref({
+  count: 0,
+  next: null,
+  previous: null,
 });
 
 // "저장" 버튼 클릭 시 호출되는 함수
@@ -122,6 +151,8 @@ const handleSave = async (id) => {
         hideProgressBar: true,
         closeOnClick: true,
       });
+      // 페이지 새로고침 (옵션)
+      fetchReports(currentPage.value);
     } catch (error) {
       toast.error('저장 중 오류가 발생했습니다.');
       console.error(error);
@@ -144,6 +175,8 @@ const handleEdit = async (id, selectedOption) => {
         hideProgressBar: true,
         closeOnClick: true,
       });
+      // 페이지 새로고침 (옵션)
+      fetchReports(currentPage.value);
     } catch (error) {
       toast.error('수정 중 오류가 발생했습니다.');
       console.error(error);
@@ -151,12 +184,17 @@ const handleEdit = async (id, selectedOption) => {
   }
 };
 
-// 백엔드에서 데이터 가져오기
-const fetchReports = async () => {
+// 백엔드에서 데이터 가져오기 (페이지네이션 반영)
+const fetchReports = async (page = 1) => {
   try {
-    const response = await axios.get('http://52.231.104.51/api/reports/?status__isnull=true');
+    const response = await axios.get('http://52.231.104.51/api/reports/', {
+      params: {
+        status__isnull: true,
+        page: page,
+      },
+    });
     console.log(response);
-    reports.value = response.data.map((report) => ({
+    reports.value = response.data.results.map((report) => ({
       id: report.id,
       receivedDate: report.receivedDate,
       company: report.company || 'Unknown',
@@ -174,17 +212,30 @@ const fetchReports = async () => {
         bodyUrl: report.details?.bodyUrl || '#',
       },
     }));
+    // 페이지네이션 정보 업데이트
+    pagination.value.count = response.data.count;
+    pagination.value.next = response.data.next;
+    pagination.value.previous = response.data.previous;
+    totalPages.value = Math.ceil(response.data.count / 10); // 페이지 사이즈가 10인 경우
+    currentPage.value = page;
   } catch (error) {
     toast.error('데이터를 가져오는 중 오류가 발생했습니다.');
     console.error(error);
   }
 };
 
-// 컴포넌트가 마운트될 때 데이터 로드
+// 페이지 이동 함수
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return;
+  fetchReports(page);
+};
+
+// 컴포넌트가 마운트될 때 첫 페이지 데이터 로드
 onMounted(() => {
   fetchReports();
 });
 </script>
+
 <style scoped>
 .table th,
 .table td {
@@ -309,5 +360,22 @@ onMounted(() => {
 /* 드롭다운 메뉴 항목 스타일 */
 .dropdown-item {
   cursor: pointer;
+}
+
+/* 페이지네이션 스타일 조정 (옵션) */
+.pagination .page-item .page-link {
+  color: #6c757d;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #6a11cb;
+  border-color: #6a11cb;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 </style>

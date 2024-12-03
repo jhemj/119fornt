@@ -1,6 +1,7 @@
+<!-- ReportsTable.vue -->
 <template>
-  <div class="card p-3 shadow-sm">
-    <h5 class="mb-3">전체 신고 리스트</h5>
+  <div>
+    <!-- 테이블 데이터 표시 -->
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-light">
@@ -99,16 +100,21 @@
     <!-- 페이징 -->
     <nav aria-label="Page navigation example">
       <ul class="pagination justify-content-center mt-3">
+        <!-- 이전 페이지 버튼 -->
         <li :class="['page-item', { disabled: currentPage === 1 }]">
           <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">이전</a>
         </li>
+
+        <!-- 동적으로 페이지 버튼 생성 -->
         <li
-          v-for="page in totalPages"
+          v-for="page in visiblePages"
           :key="page"
           :class="['page-item', { active: currentPage === page }]"
         >
           <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
         </li>
+
+        <!-- 다음 페이지 버튼 -->
         <li :class="['page-item', { disabled: currentPage === totalPages }]">
           <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">다음</a>
         </li>
@@ -171,7 +177,28 @@ function statusClass(status) {
 // 페이징 계산
 const totalPages = computed(() => Math.ceil(props.totalItems / props.pageSize));
 
-// 페이지 변경
+// 최대 표시할 페이지 버튼 수
+const maxPageButtons = 10;
+
+// 현재 페이지에 따라 표시할 페이지 번호 계산
+const visiblePages = computed(() => {
+  const pages = [];
+  let startPage = Math.max(1, props.currentPage - Math.floor(maxPageButtons / 2));
+  let endPage = startPage + maxPageButtons - 1;
+
+  if (endPage > totalPages.value) {
+    endPage = totalPages.value;
+    startPage = Math.max(1, endPage - maxPageButtons + 1);
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+});
+
+// 페이지 변경 함수
 function changePage(page) {
   if (page < 1 || page > totalPages.value) return;
   emit("update:currentPage", page);
@@ -360,12 +387,10 @@ window.addEventListener("resize", () => {
   text-align: center;
 }
 
-
-
 .toggle-button {
-  background-color: $info;
-  border-color: $info;
-  color: $white;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
   padding: 0.25rem 0.4rem;
   font-size: 1rem;
   line-height: 1;
@@ -375,11 +400,11 @@ window.addEventListener("resize", () => {
 }
 
 .toggle-button:hover {
-  background-color: darken($info, 10%);
-  border-color: darken($info, 15%);
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
 }
 
 .toggle-button:focus {
-  box-shadow: 0 0 0 0.2rem rgba($info, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.5);
 }
 </style>

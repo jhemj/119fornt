@@ -1,5 +1,5 @@
-  <script setup>
-import { ref, computed, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue';
 import ArgonPagination from '../../components/ArgonPagination.vue';
 import { useToast } from 'vue-toastification';
 import axios from 'axios'; // Axios 임포트
@@ -16,34 +16,43 @@ window.addEventListener("resize", () => {
 const reports = ref([]);
 const currentPage = ref(1);
 const pageSize = 20;
-
-// 데이터 필터링 (피싱, 악성코드만 포함)
-const filteredReports = computed(() => {
-  return reports.value.filter((report) => ['피싱', '악성코드'].includes(report.status));
+const totalItems = ref(0);
+const totalPages = ref(0);
+const pagination = ref({
+  next: null,
+  previous: null,
 });
 
-// 페이징 처리
-const paginatedReports = computed(() => {
-  const start = (currentPage.value - 1) * pageSize;
-  const end = start + pageSize;
-  return filteredReports.value.slice(start, end);
-});
+// 환경 변수에서 API URL 가져오기 (Vue CLI 기준)
+const baseURL = process.env.VUE_APP_API_BASE_URL || 'http://52.231.104.51/api/reports/';
 
 // 데이터 초기화 함수
-const fetchReports = async () => {
+const fetchReports = async (page = 1) => {
   try {
-    const response = await axios.get('http://52.231.104.51/api/reports/?status__in=피싱,악성코드');
-    reports.value = response.data.map((report) => ({
+    const response = await axios.get(`${baseURL}`, {
+      params: {
+        status__in: '피싱,악성코드', // 필터 파라미터 수정
+        page: page, // 페이지 번호
+      },
+    });
+
+    // 응답 데이터 처리
+    reports.value = response.data.results.map((report) => ({
       id: report.id,
       receivedDate: report.receivedDate,
       status: report.status || '미분류',
-      details: {
-        sender: report.details?.sender || 'unknown@example.com',
-        subject: report.details?.subject || 'No Subject',
-        attachment: report.details?.attachment || 'None',
-        bodyUrl: report.details?.bodyUrl || '#',
-      },
+      sender: report.sender_email || 'unknown@example.com',
+      subject: report.subject || 'No Subject',
+      attachments: report.attachments?.map(a => a.filename).join(', ') || 'None',
+      urls: report.urls?.map(u => u.url).join(', ') || '#',
     }));
+
+    // 페이지네이션 정보 업데이트
+    totalItems.value = response.data.count;
+    totalPages.value = Math.ceil(totalItems.value / pageSize);
+    currentPage.value = page;
+    pagination.value.next = response.data.next;
+    pagination.value.previous = response.data.previous;
   } catch (error) {
     toast.error('데이터를 가져오는 중 오류가 발생했습니다.');
     console.error(error);
@@ -52,28 +61,21 @@ const fetchReports = async () => {
 
 // 페이지 변경 함수
 function updateCurrentPage(newPage) {
-  currentPage.value = newPage;
+  if (newPage < 1 || newPage > totalPages.value) return;
+  fetchReports(newPage);
 }
 
 // 상태 수정 함수
-function handleEdit(reportId, selectedOption) {
+async function handleEdit(reportId, selectedOption) {
   const report = reports.value.find((r) => r.id === reportId);
   if (report) {
     try {
-      // // API 요청: 상태 업데이트
-      // axios.patch(`http://52.231.104.51/api/reports/${reportId}/update_status/`, {
-      //   status: selectedOption,
-      // });
- 
-      // 클라이언트 상태 업데이트
-      report.status = selectedOption;
-
-      // 성공 알림
-      toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`, {
-        timeout: 3000,
-        closeOnClick: true,
-        pauseOnHover: true,
+      await axios.patch(`${baseURL}update-status/${reportId}/`, {
+        status: selectedOption,
       });
+      report.status = selectedOption;
+      toast.success(`상태가 "${selectedOption}"(으)로 수정되었습니다.`);
+      fetchReports(currentPage.value);
     } catch (error) {
       toast.error('수정 중 오류가 발생했습니다.');
       console.error(error);
@@ -82,21 +84,12 @@ function handleEdit(reportId, selectedOption) {
 }
 
 // 발신자 차단 함수
-function blockSender(reportId) {
+async function blockSender(reportId) {
   const report = reports.value.find((r) => r.id === reportId);
   if (report) {
     try {
-      // API 요청: 발신자 차단
-      // axios.post(`http://52.231.104.51/api/reports/block-sender`, {
-      //   sender: report.details.sender,
-      // });
-
-      // 성공 알림
-      toast.success(`발신자 "${report.details.sender}"가 차단되었습니다.`, {
-        timeout: 3000,
-        closeOnClick: true,
-        pauseOnHover: true,
-      });
+      await axios.post(`${baseURL}block-sender/`, { sender: report.sender });
+      toast.success(`발신자 "${report.sender}"가 차단되었습니다.`);
     } catch (error) {
       toast.error('발신자 차단 중 오류가 발생했습니다.');
       console.error(error);
@@ -105,21 +98,12 @@ function blockSender(reportId) {
 }
 
 // URL 차단 함수
-function blockUrl(reportId) {
+async function blockUrl(reportId) {
   const report = reports.value.find((r) => r.id === reportId);
   if (report) {
     try {
-      // API 요청: URL 차단
-      axios.post(`http://52.231.104.51/api/reports/block-url`, {
-        url: report.details.bodyUrl,
-      });
-
-      // 성공 알림
-      toast.success(`URL "${report.details.bodyUrl}"가 차단되었습니다.`, {
-        timeout: 3000,
-        closeOnClick: true,
-        pauseOnHover: true,
-      });
+      await axios.post(`${baseURL}block-url/`, { url: report.urls });
+      toast.success(`URL "${report.urls}"가 차단되었습니다.`);
     } catch (error) {
       toast.error('URL 차단 중 오류가 발생했습니다.');
       console.error(error);
@@ -139,79 +123,69 @@ onMounted(() => {
       <h6>전체 신고 리스트</h6>
     </div>
     <div class="card-body px-0 pt-0 pb-2">
+      <!-- 테이블 컨테이너 -->
       <div class="table-container">
-        <transition-group name="fade" tag="table" class="table align-items-center mb-0" style="table-layout: fixed; width: 100%;">
+        <table class="table align-items-center mb-0">
           <thead>
             <tr>
-              <th class="text-xs number-column">번호</th>
-              <th class="text-xs date-column">날짜</th>
-              <th class="text-xs sender-column">발신자</th>
-              <th class="text-xs title-column">제목</th>
-              <th class="text-xs attachment-column">첨부파일</th>
-              <th class="text-xs bodyurl-column">본문 URL</th>
-              <th class="text-xs status-column">상태</th>
-              <th class="text-xs edit-column">수정</th>
-              <th class="text-xs response-column">대응</th>
+              <th>번호</th>
+              <th>날짜</th>
+              <th>발신자</th>
+              <th>제목</th>
+              <th>첨부파일</th>
+              <th>본문 URL</th>
+              <th>상태</th>
+              <th>수정</th>
+              <th>대응</th>
             </tr>
           </thead>
           <tbody>
-            <template v-for="report in paginatedReports" :key="report.id">
-              <tr>
-                <td class="text-xs number-column">{{ report.id }}</td>
-                <td class="text-xs date-column">{{ report.receivedDate }}</td>
-                <td class="text-xs sender-column">{{ report.details.sender }}</td>
-                <td class="text-xs title-column">{{ report.details.subject }}</td>
-                <td class="text-xs attachment-column">{{ report.details.attachment }}</td>
-                <td class="text-xs bodyurl-column">
-                  <a :href="report.details.bodyUrl" target="_blank">{{ report.details.bodyUrl }}</a>
-                </td>
-                <td :class="['text-xs', { 'text-danger font-weight-bold': ['피싱', '악성코드'].includes(report.status) }]">
-                  {{ report.status }}
-                </td>
-                <td class="edit-column">
+            <tr v-for="report in reports" :key="report.id">
+              <td>{{ report.id }}</td>
+              <td>{{ report.receivedDate }}</td>
+              <td class="text-truncate">{{ report.sender }}</td>
+              <td class="text-truncate">{{ report.subject }}</td>
+              <td class="text-truncate">{{ report.attachments }}</td>
+              <td class="text-truncate">
+                <a :href="report.urls" target="_blank">{{ report.urls }}</a>
+              </td>
+              <td>{{ report.status }}</td>
+              <td>
+                <button
+                  class="btn btn-warning btn-sm"
+                  @click="handleEdit(report.id, '피싱')"
+                >
+                  수정
+                </button>
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <!-- 발신자 차단 버튼 -->
                   <button
-                    class="btn btn-warning btn-sm edit-button dropdown-toggle"
-                    type="button"
-                    :id="'dropdownMenuButton-' + report.id"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    class="btn btn-secondary btn-sm btn-block-sender"
+                    @click="blockSender(report.id)"
                   >
-                    수정
+                    발신자 차단
                   </button>
-                  <ul class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + report.id">
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '피싱')">피싱</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '악성코드')">악성코드</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '캠페인')">캠페인</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="handleEdit(report.id, '오신고')">오신고</a></li>
-                  </ul>
-                </td>
-                <td class="response-column">
+                  <!-- URL 차단 버튼 -->
                   <button
-                    class="btn btn-secondary btn-sm response-button dropdown-toggle"
-                    type="button"
-                    :id="'responseDropdownButton-' + report.id"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
+                    class="btn btn-secondary btn-sm btn-block-url"
+                    @click="blockUrl(report.id)"
                   >
-                    대응
+                    URL 차단
                   </button>
-                  <ul class="dropdown-menu" :aria-labelledby="'responseDropdownButton-' + report.id">
-                    <li><a class="dropdown-item" href="#" @click.prevent="blockSender(report.id)">발신자 차단</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="blockUrl(report.id)">URL 차단</a></li>
-                  </ul>
-                </td>
-              </tr>
-            </template>
+                </div>
+              </td>
+            </tr>
           </tbody>
-        </transition-group>
+        </table>
       </div>
-      <div class="text-center mt-3">
+      <!-- 페이지네이션 -->
+      <div class="mt-3">
         <ArgonPagination
-          :totalItems="filteredReports.length"
+          :totalItems="totalItems"
           :pageSize="pageSize"
           :currentPage="currentPage"
-          color="primary"
-          size="sm"
           @update:currentPage="updateCurrentPage"
         />
       </div>
@@ -220,184 +194,81 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 일반 스타일 */
+.card {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
 
 .table-container {
-  overflow-x: auto;
   width: 100%;
+  overflow-x: auto; /* 필요 시 가로 스크롤 */
 }
 
 .table {
   width: 100%;
-  table-layout: auto;
-  box-sizing: border-box;
+  border-collapse: collapse;
+  table-layout: auto; /* 모바일에서 동적으로 테이블 크기 조정 */
 }
 
 .table th,
 .table td {
-  box-sizing: border-box;
   text-align: center;
-  font-size: 0.75rem;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
+  vertical-align: middle;
   padding: 8px;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.response-box {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  border: none;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  border: none;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: #5e72e4;
-  font-size: 1rem;
-  padding: 0;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.font-weight-bold {
+.table th {
+  background-color: #f8f9fa;
   font-weight: bold;
 }
 
-/* 각 열의 최소 너비 설정 */
-
-.number-column {
-  min-width: 5%;
+.table tr:nth-child(even) {
+  background-color: #f8f9fa;
 }
 
-.date-column {
-  min-width: 10%;
+.text-truncate {
+  max-width: 150px; /* 넓이를 제한 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sender-column {
-  min-width: 15%;
+/* 버튼 그룹 스타일링 */
+.btn-group {
+  display: flex;
+  gap: 4px; /* 버튼 간격 */
 }
 
-.title-column {
-  min-width: 15%;
+.btn-block-sender,
+.btn-block-url {
+  flex: 1; /* 버튼의 너비를 동일하게 분배 */
+  font-size: 0.75rem; /* 작은 폰트 크기 */
 }
-
-.attachment-column {
-  min-width: 12%;
-}
-
-.bodyurl-column {
-  min-width: 5%;
-}
-
-.status-column {
-  min-width: 10%;
-}
-
-.edit-column {
-  min-width: 10%;
-}
-
-.response-column {
-  min-width: 5%;
-}
-
-.edit-button,
-.response-button {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-.table th,
-.table td {
-  padding: 8px;
-}
-
-/* 모바일 스타일 */
 
 @media (max-width: 576px) {
-  .table-container {
-    overflow-x: auto;
-  }
-
   .table {
-    width: 100%;
-    table-layout: fixed; /* 테이블 레이아웃을 고정으로 설정 */
-  }
-
-  /* 숨길 열의 th와 td를 완전히 숨기기 */
-  .attachment-column,
-  .bodyurl-column,
-  .table th.attachment-column,
-  .table td.attachment-column,
-  .table th.bodyurl-column,
-  .table td.bodyurl-column {
-    display: none;
-  }
-
-  /* 남은 열의 너비를 재조정 */
-  .number-column,
-  .date-column,
-  .sender-column,
-  .title-column,
-  .status-column,
-  .edit-column,
-  .response-column {
-    width: 14.28%; /* 남은 7개의 열을 균등하게 분배 */
+    table-layout: auto; /* 모바일에서 레이아웃 조정 */
   }
 
   .table th,
   .table td {
-    padding: 4px; /* 패딩 축소 */
-    font-size: 0.7rem; /* 글꼴 크기 축소 */
-    line-height: 1.2; /* 라인 높이 조정으로 행 높이 감소 */
-  }
-
-  /* 버튼 크기 조정 */
-  .btn {
-    padding: 2px 4px;
-    font-size: 0.65rem;
-  }
-
-  .dropdown-menu {
     font-size: 0.75rem;
+    padding: 4px; /* 패딩 축소 */
   }
 
-  /* 모바일 정보 박스 레이아웃 조정 */
-  .mobile-info-row .mobile-info-box {
-    padding: 6px;
-    font-size: 0.7rem;
-    line-height: 1.2;
-    background-color: #f1f3f5;
-    border: 1px solid #ddd;
-    margin: 5px auto;
+  .btn-group {
+    flex-direction: column; /* 모바일에서 버튼 세로 배치 */
+    gap: 8px; /* 버튼 간 간격 */
   }
 
-  .mobile-info-box div {
-    margin-bottom: 5px;
+  .btn-block-sender,
+  .btn-block-url {
+    width: 100%; /* 버튼 너비를 100%로 */
   }
 }
 </style>
