@@ -10,10 +10,9 @@
             <th scope="col" class="text-sm">접수일</th>
             <th scope="col" class="text-sm d-none d-md-table-cell company-column">회사</th>
             <th scope="col" class="text-sm d-none d-lg-table-cell sector-column">부문</th>
-            <th scope="col" class="text-sm d-none d-xl-table-cell title-column">호칭</th>
+            <th scope="col" class="text-sm d-none d-xl-table-cell title-column">제목</th>
             <th scope="col" class="text-sm d-none d-xxl-table-cell name-column">이름</th>
             <th scope="col" class="text-sm long-text">이메일</th>
-            <th scope="col" class="text-sm long-text">제목</th>
             <th scope="col" class="text-sm">상태</th>
             <th scope="col" class="text-sm">수정</th>
             <th scope="col" class="text-sm">상세</th>
@@ -29,7 +28,6 @@
               <td class="align-middle text-sm d-none d-xl-table-cell title-column">{{ report.title }}</td>
               <td class="align-middle text-sm d-none d-xxl-table-cell name-column">{{ report.name }}</td>
               <td class="align-middle text-sm long-text">{{ report.email }}</td>
-              <td class="align-middle text-sm long-text">{{ report.subject }}</td>
               <td :class="['text-sm', statusClass(report.status)]">{{ report.status || '미분류' }}</td>
               <!-- 수정 열: 드롭다운 구조 변경 -->
               <td class="align-middle text-center text-sm edit-column">
