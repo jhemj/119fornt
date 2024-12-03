@@ -345,8 +345,8 @@ onMounted(() => {
 }
 
 .toggle-button {
-  background-color: #0dcaf0;
-  border-color: #0dcaf0;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
   color: #fff;
   padding: 0.25rem 0.4rem;
   font-size: 1rem;
